@@ -167,7 +167,7 @@ input#name-in:focus{border-color:#e0d000}
       <span class="flare" style="top:53%;right:8%"></span>
       <span class="flare" style="top:44%;left:46%"></span>
     </div>
-    <div class="version">v1.1 — ÉDITION AMIGA</div>
+    <div class="version">v1.2 — ÉDITION AMIGA</div>
     <h1 class="logo"><span class="gem"></span>CRYSTAL<br>HAMMER</h1>
     <p class="tag">CASSE-CRISTAUX · HOMMAGE À L'AMIGA 1988</p>
     <p id="best-line"></p>
@@ -656,7 +656,7 @@ function Game(canvas,audio,hooks){
   this.paddle={x:W/2,y:H-46,w:96,tw:96,h:13,pulse:0};
   this.stars=[]; /* No starfield — Crystal Hammer uses patterned backgrounds */
   this.sprites={};
-  this.shake=0;this.t=0;this.stateT=0;this.fwT=0;this.lcd=0;this.lastPos={x:W/2,y:H-100};
+  this.shake=0;this.t=0;this.stateT=0;this.fwT=0;this.lcd=0;this.bannerT=0;this.lastPos={x:W/2,y:H-100};
   this.accent='#4090e0';
   this.loadLevel(0);
   this.resetBall(true);
@@ -700,6 +700,7 @@ Game.prototype.loadLevel=function(idx){
   this.eff=this.blankEff();this.pus=[];this.lasers=[];this.parts=[];this.pops=[];this.combo=0;
   var pw=this.difficulty==='easy'?120:(this.difficulty==='hard'?78:96);
   this.paddle.w=pw;this.paddle.tw=pw;this.paddle.x=W/2;
+  this.bannerT=2.4;
 };
 
 Game.prototype.makeBall=function(stuck){
@@ -983,7 +984,7 @@ Game.prototype.gameOverNow=function(){
   this.state='over';this.balls=[];this.pus=[];this.lasers=[];
   this.audio.over();
   if(this.score>this.hi){this.hi=this.score;try{localStorage.setItem('crystalhammer_hi',String(this.hi));}catch(e){}}
-  if(this.hooks.end)this.hooks.end({win:false,score:this.score,level:this.levelIdx+1});
+  if(this.hooks.end)this.hooks.end({win:false,score:this.score,level:this.levelIdx});
 };
 Game.prototype.addScore=function(n){
   this.score+=n;
@@ -1008,7 +1009,7 @@ Game.prototype.addPopup=function(txt,x,y,c){this.pops.push({txt:txt,x:x,y:y,c:c,
 
 Game.prototype.update=function(dt){
   var i=0;
-  this.t+=dt;this.shake*=Math.pow(0.02,dt);
+  this.t+=dt;this.shake*=Math.pow(0.02,dt);this.bannerT-=dt;
   for(i=this.parts.length-1;i>=0;i--){var pt=this.parts[i];pt.life-=dt;if(pt.life<=0){this.parts.splice(i,1);continue;}pt.vy+=pt.g*dt;pt.x+=pt.vx*dt;pt.y+=pt.vy*dt;}
   for(i=this.pops.length-1;i>=0;i--){var po=this.pops[i];po.life-=dt*0.9;po.y-=32*dt;if(po.life<=0)this.pops.splice(i,1);}
   switch(this.state){
@@ -1479,6 +1480,26 @@ Game.prototype.draw=function(){
   }
   ctx.globalAlpha=1;
   ctx.restore();
+  /* Level intro banner (outside shake) */
+  if(this.bannerT>0&&this.state==='playing'){
+    var al=clamp(Math.min((2.4-this.bannerT)/0.3,this.bannerT/0.6),0,1);
+    var by2=H*0.42,nm=(LEVELS[this.levelIdx]&&LEVELS[this.levelIdx].name)||'';
+    ctx.save();
+    ctx.globalAlpha=al;
+    ctx.fillStyle='rgba(4,8,18,.75)';
+    rr(ctx,W/2-195,by2-36,390,72,12);ctx.fill();
+    ctx.strokeStyle=this.accent;ctx.lineWidth=1.5;ctx.shadowColor=this.accent;ctx.shadowBlur=10;
+    rr(ctx,W/2-195,by2-36,390,72,12);ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle='#e8f2ff';
+    ctx.font='900 26px "Courier New",monospace';
+    ctx.fillText('NIVEAU '+(this.levelIdx+1),W/2,by2-13);
+    ctx.fillStyle=this.accent;
+    ctx.font='700 15px "Courier New",monospace';
+    ctx.fillText(nm.toUpperCase(),W/2,by2+16);
+    ctx.restore();
+  }
   /* HUD (outside shake) */
   this.drawHUD(ctx);
 };
@@ -1504,6 +1525,7 @@ var hooks={
 };
 
 game=new Game(canvas,audio,hooks);
+if(location.hash==='#debug')window.CH=game;
 
 /* Best score display */
 function updateBest(){
@@ -1653,6 +1675,14 @@ canvas.addEventListener('touchmove',function(e){
   }
 },{passive:false});
 canvas.addEventListener('touchend',function(e){e.preventDefault();},{passive:false});
+
+/* Auto-pause when tab hidden or window loses focus */
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden&&game.state==='playing'&&!game.paused)game.togglePause(true);
+});
+window.addEventListener('blur',function(){
+  if(game.state==='playing'&&!game.paused)game.togglePause(true);
+});
 
 /* Sound button initial state */
 $('btn-sound').textContent=audio.muted?'🔇 MUET':'🔊 SON';
