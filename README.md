@@ -1,6 +1,6 @@
 # Prism Smash — version web
 
-Casse-briques rétro jouable dans le navigateur, sur téléphone comme sur ordinateur : 30 tableaux de prismes, 8 bonus, des vers à abattre ou à écraser, 3 difficultés et un top 20 pour chacune.
+Casse-briques rétro jouable dans le navigateur, sur téléphone comme sur ordinateur : 30 tableaux de prismes, 8 bonus, des vers et des formes 3D (cube, pyramide, octaèdre, prisme) à abattre ou à écraser, 3 difficultés et un top 20 pour chacune.
 
 Tout tient dans `index.html` (JavaScript et Canvas, sans dépendance ni connexion) : ouvrir le fichier suffit, ou publier le dépôt avec GitHub Pages.
 
