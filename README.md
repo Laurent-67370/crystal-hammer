@@ -7,7 +7,7 @@ Tout tient dans `index.html` (JavaScript et Canvas, sans dépendance ni connexio
 - **Toucher** : glisser pour piloter, toucher pour lancer ou tirer (trois modes dans les réglages) ; un second doigt tire sans lâcher le pilotage.
 - **Clavier** : flèches ou A / D pour piloter, Espace ou Entrée pour lancer et tirer, P pour la pause, Échap pour revenir.
 - **Manette** : croix ou stick, A / X pour lancer et tirer, START pour la pause.
-- Français et anglais ; sons synthétisés ; musique personnelle possible (le fichier reste sur l'appareil).
+- Français et anglais ; sons synthétisés ; musique originale de style Amiga (« Prism Drive », un module ProTracker lu par un lecteur intégré) ; musique personnelle possible, y compris les modules `.mod` (le fichier reste sur l'appareil).
 - Scores, progression et réglages sont enregistrés dans le navigateur ; aucune donnée n'est envoyée.
 
 Version Android : https://github.com/Laurent-67370/prism-smash

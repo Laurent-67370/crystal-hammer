@@ -20,7 +20,7 @@ canvas{display:block;width:100vw;height:100vh;height:100dvh}
 <body>
 <canvas id="jeu" aria-label="Prism Smash"></canvas>
 <div id="toast" role="status"></div>
-<input id="fichier-musique" type="file" accept="audio/*" hidden>
+<input id="fichier-musique" type="file" accept="audio/*,.mod" hidden>
 <input id="fichier-sauvegarde" type="file" accept=".json,application/json" hidden>
 <script>
 /*
@@ -159,9 +159,9 @@ const TEXTS = {
     musicVolume: v => `MUSIQUE ${v} %`, musicOff: 'MUSIQUE NON', bonusGuide: 'GUIDE DES BONUS', tapNext: 'TOUCHE ›',
     topPilots: 'MEILLEURS PILOTES', currentRecord: s => `RECORD ACTUEL  ${s}`, noScore: 'AUCUN SCORE ENREGISTRÉ',
     footer: 'Sans publicité, sans connexion, sans compte', titleScrollHint: '▼  GLISSE : GUIDE DES BONUS ET SCORES',
-    soundSetup: 'AMBIANCE SONORE', musicOffByDefault: 'La musique est désactivée par défaut.', effectsIndependent: 'Les effets du jeu restent indépendants.',
+    soundSetup: 'AMBIANCE SONORE', musicIntro: 'Musique originale du jeu, ou la vôtre.', effectsIndependent: 'Les effets du jeu restent indépendants.',
     musicToggle: e => `MUSIQUE  ${e ? 'OUI' : 'NON'}`, effectsToggle: e => `EFFETS SONORES  ${e ? 'OUI' : 'NON'}`,
-    chooseMyMusic: 'CHOISIR MA MUSIQUE', confirm: 'VALIDER', noTrackSelected: 'AUCUNE PISTE SÉLECTIONNÉE',
+    chooseMyMusic: 'CHOISIR MA MUSIQUE', confirm: 'VALIDER', gameTheme: 'PRISM DRIVE · MUSIQUE DU JEU',
     score: 'SCORE', best: s => `RECORD ${s}`, levelOf: l => `NIVEAU ${l}/30`, lives: 'VIES',
     wide: s => `LARGE ${s}`, sticky: s => `COLLE ${s}`, laser: s => `LASER ${s}`, extraLife: 'VIE SUPPLÉMENTAIRE !',
     tapToLaunch: 'TOUCHEZ POUR LANCER', levelComplete: 'NIVEAU TERMINÉ', points: p => `+ ${p} POINTS`,
@@ -181,10 +181,10 @@ const TEXTS = {
     settingsSubtitle: 'Enregistrés automatiquement  •  partie en pause',
     section: {SOUND: 'SON', CONTROLS: 'COMMANDES', DISPLAY: 'AFFICHAGE', BACKUP: 'SAUVEGARDE'},
     setting: {SOUND: 'EFFETS SONORES', EFFECTS_VOLUME: 'VOLUME DES EFFETS', MUSIC: 'MUSIQUE', MUSIC_VOLUME: 'VOLUME DE LA MUSIQUE',
-      MUSIC_CHOOSE: 'CHOISIR UNE PISTE', MUSIC_REMOVE: 'SUPPRIMER', CONTROLS: 'CONTRÔLES', TOUCH_SENSITIVITY: 'SENSIBILITÉ TACTILE',
+      MUSIC_CHOOSE: 'CHOISIR UNE PISTE', MUSIC_REMOVE: 'MUSIQUE DU JEU', CONTROLS: 'CONTRÔLES', TOUCH_SENSITIVITY: 'SENSIBILITÉ TACTILE',
       GAMEPAD_SENSITIVITY: 'SENSIBILITÉ MANETTE', HAPTICS: 'VIBRATIONS', LANGUAGE: 'LANGUE', VISUAL_EFFECTS: 'EFFETS VISUELS',
       HIGH_CONTRAST: 'CONTRASTE RENFORCÉ', REDUCED_MOTION: 'MOUVEMENTS RÉDUITS', EXPORT: 'EXPORTER', IMPORT: 'RESTAURER', BACK: 'RETOUR À LA PAUSE'},
-    noTrack: 'AUCUNE PISTE', backupNote: 'Scores, progression et réglages ; la musique reste sur cet appareil.',
+    backupNote: 'Scores, progression et réglages ; la musique reste sur cet appareil.',
     settingsFooter: 'Échap, START ou P : revenir à la pause', settingsScrollHint: '▼  GLISSE POUR LA SUITE DES RÉGLAGES',
     tutorialTitle: ['', '1. PILOTE TON VAISSEAU', '2. LANCE LA BALLE', '3. RÉCUPÈRE LES BONUS'],
     tutorialSteer: {RELATIVE: 'Glisse ton doigt pour te déplacer.', DIRECT: 'Déplace ton doigt pour guider le vaisseau.', ZONES: 'Maintiens la zone gauche ou droite.'},
@@ -210,9 +210,9 @@ const TEXTS = {
     musicVolume: v => `MUSIC ${v} %`, musicOff: 'MUSIC OFF', bonusGuide: 'BONUS GUIDE', tapNext: 'TAP ›',
     topPilots: 'TOP PILOTS', currentRecord: s => `CURRENT RECORD  ${s}`, noScore: 'NO SCORE YET',
     footer: 'No ads, no Internet connection, no account', titleScrollHint: '▼  SWIPE: BONUS GUIDE AND SCORES',
-    soundSetup: 'SOUND SETUP', musicOffByDefault: 'Music is off by default.', effectsIndependent: 'Game sound effects are set separately.',
+    soundSetup: 'SOUND SETUP', musicIntro: "The game's own music, or yours.", effectsIndependent: 'Game sound effects are set separately.',
     musicToggle: e => `MUSIC  ${e ? 'ON' : 'OFF'}`, effectsToggle: e => `SOUND EFFECTS  ${e ? 'ON' : 'OFF'}`,
-    chooseMyMusic: 'CHOOSE MY MUSIC', confirm: 'OK', noTrackSelected: 'NO TRACK SELECTED',
+    chooseMyMusic: 'CHOOSE MY MUSIC', confirm: 'OK', gameTheme: 'PRISM DRIVE · GAME MUSIC',
     score: 'SCORE', best: s => `BEST ${s}`, levelOf: l => `LEVEL ${l}/30`, lives: 'LIVES',
     wide: s => `WIDE ${s}`, sticky: s => `STICKY ${s}`, laser: s => `LASER ${s}`, extraLife: 'EXTRA LIFE!',
     tapToLaunch: 'TAP TO LAUNCH', levelComplete: 'STAGE CLEARED', points: p => `+ ${p} POINTS`,
@@ -232,10 +232,10 @@ const TEXTS = {
     settingsSubtitle: 'Saved automatically  •  game paused',
     section: {SOUND: 'SOUND', CONTROLS: 'CONTROLS', DISPLAY: 'DISPLAY', BACKUP: 'BACKUP'},
     setting: {SOUND: 'SOUND EFFECTS', EFFECTS_VOLUME: 'EFFECTS VOLUME', MUSIC: 'MUSIC', MUSIC_VOLUME: 'MUSIC VOLUME',
-      MUSIC_CHOOSE: 'CHOOSE A TRACK', MUSIC_REMOVE: 'REMOVE', CONTROLS: 'CONTROLS', TOUCH_SENSITIVITY: 'TOUCH SENSITIVITY',
+      MUSIC_CHOOSE: 'CHOOSE A TRACK', MUSIC_REMOVE: 'GAME MUSIC', CONTROLS: 'CONTROLS', TOUCH_SENSITIVITY: 'TOUCH SENSITIVITY',
       GAMEPAD_SENSITIVITY: 'GAMEPAD SENSITIVITY', HAPTICS: 'VIBRATION', LANGUAGE: 'LANGUAGE', VISUAL_EFFECTS: 'VISUAL EFFECTS',
       HIGH_CONTRAST: 'HIGH CONTRAST', REDUCED_MOTION: 'REDUCED MOTION', EXPORT: 'EXPORT', IMPORT: 'RESTORE', BACK: 'BACK TO PAUSE'},
-    noTrack: 'NO TRACK', backupNote: 'Scores, progress and settings; your music stays on this device.',
+    backupNote: 'Scores, progress and settings; your music stays on this device.',
     settingsFooter: 'Esc, START or P: return to the pause menu', settingsScrollHint: '▼  SWIPE FOR MORE SETTINGS',
     tutorialTitle: ['', '1. STEER YOUR SHIP', '2. LAUNCH THE BALL', '3. COLLECT THE BONUSES'],
     tutorialSteer: {RELATIVE: 'Swipe your finger to move.', DIRECT: 'Move your finger to guide the ship.', ZONES: 'Hold the left or right zone.'},
@@ -882,24 +882,325 @@ const Sound = (() => {
   };
 })();
 
-// Musique personnelle : le fichier choisi est lu en boucle pour la session (rien n'est envoyé).
+// ------------------------------------------------------------------ musique : modules Amiga (ProTracker)
+
+// Module ProTracker (ou Soundtracker 15 instruments, ou 6/8 voies), lu une fois.
+const ModModule = (() => {
+  function channelsFor(tag) {
+    if (['M.K.', 'M!K!', 'FLT4', '4CHN'].includes(tag)) return 4;
+    if (tag === '6CHN') return 6;
+    if (['8CHN', 'OCTA', 'CD81', 'FLT8'].includes(tag)) return 8;
+    if (/^[1-9]CHN$/.test(tag)) return +tag[0];
+    if (/^\d\dCH$/.test(tag) && +tag.slice(0, 2) >= 1 && +tag.slice(0, 2) <= 32) return +tag.slice(0, 2);
+    return 0;
+  }
+  const tagOf = b => b.length >= 1084 ? String.fromCharCode(b[1080], b[1081], b[1082], b[1083]) : '';
+  function looksLikeModule(b) { return channelsFor(tagOf(b)) > 0; }
+  function parse(b) {
+    try {
+      const u16 = at => (b[at] << 8) | b[at + 1];
+      const text = (at, n) => String.fromCharCode(...b.subarray(at, at + n)).split('\0')[0].trim();
+      const tagged = looksLikeModule(b), sampleCount = tagged ? 31 : 15, channels = tagged ? channelsFor(tagOf(b)) : 4;
+      const songAt = 20 + sampleCount * 30;
+      if (b.length < songAt + 130) return null;
+      const length = b[songAt];
+      if (length < 1 || length > 128) return null;
+      const order = Array.from(b.subarray(songAt + 2, songAt + 2 + length));
+      if (order.some(p => p > 127)) return null;
+      const restart = b[songAt + 1] < length ? b[songAt + 1] : 0;
+      let patternCount = 0;
+      for (let i = 0; i < 128; i++) patternCount = Math.max(patternCount, b[songAt + 2 + i] + 1);
+      const patternsAt = songAt + 130 + (tagged ? 4 : 0), patternSize = 64 * channels * 4;
+      let sampleData = patternsAt + patternCount * patternSize;
+      if (sampleData > b.length) return null;
+      const patterns = [];
+      for (let i = 0; i < patternCount; i++) patterns.push(b.subarray(patternsAt + i * patternSize, patternsAt + (i + 1) * patternSize));
+      const samples = [];
+      for (let i = 0; i < 31; i++) {
+        if (i >= sampleCount) { samples.push({data: new Int8Array(0), volume: 0, finetune: 0, loopStart: 0, loopLength: 0}); continue; }
+        const at = 20 + i * 30, declared = u16(at + 22) * 2;
+        const size = Math.max(0, Math.min(declared, b.length - sampleData));
+        const data = new Int8Array(b.buffer, b.byteOffset + sampleData, size).slice();
+        sampleData += declared;
+        const ft = b[at + 24] & 15;
+        let loopStart = u16(at + 26) * 2, loopLength = u16(at + 28) * 2;
+        if (!tagged && loopStart + loopLength > size) loopStart >>= 1; // vieux Soundtracker : début en octets
+        if (loopStart >= size) loopLength = 0;
+        if (loopStart + loopLength > size) loopLength = size - loopStart;
+        samples.push({name: text(at, 22), data, volume: Math.min(b[at + 25], 64), finetune: ft > 7 ? ft - 16 : ft,
+          loopStart, loopLength: loopLength > 2 ? loopLength : 0});
+      }
+      return {title: text(0, 20), samples, order, restart, channels, patterns};
+    } catch (e) { return null; }
+  }
+  return {parse, looksLikeModule};
+})();
+
+// Lecteur ProTracker : voies 1 et 4 à gauche, 2 et 3 à droite, comme la puce Paula (un peu rapprochées).
+// Même fonctionnement que ModPlayer.kt de la version Android.
+class ModPlayer {
+  constructor(module, sampleRate) {
+    this.m = module; this.rate = sampleRate;
+    this.ch = Array.from({length: module.channels}, (_, i) => ({
+      sample: null, pos: 0, playing: false, period: 0, target: 0, volume: 0, finetune: 0, note: -1, portaSpeed: 0,
+      vibSpeed: 0, vibDepth: 0, vibPos: 0, vibWave: 0, tremSpeed: 0, tremDepth: 0, tremPos: 0, tremWave: 0,
+      offset: 0, loopRow: 0, loopCount: 0, outPeriod: 0, outVolume: 0, pan: (i % 4 === 0 || i % 4 === 3) ? 0.2 : 0.8,
+      effect: 0, param: 0, delayedPeriod: 0, delayedSample: 0
+    }));
+    this.speed = 6; this.tempo = 125; this.tick = 0; this.row = 0; this.position = 0; this.patternDelay = 0;
+    this.breakRow = -1; this.jump = -1; this.loops = 0;
+    this.processRow();
+    this.left = this.samplesPerTick();
+  }
+  samplesPerTick() { return Math.round(this.rate * 2.5 / this.tempo); }
+  render(outL, outR) {
+    const frames = outL.length;
+    outL.fill(0); outR.fill(0);
+    let written = 0;
+    while (written < frames) {
+      if (this.left === 0) { this.advanceTick(); this.left = this.samplesPerTick(); }
+      const count = Math.min(this.left, frames - written);
+      this.mix(outL, outR, written, count);
+      written += count; this.left -= count;
+    }
+  }
+  mix(outL, outR, from, count) {
+    const gain = 0.5 / 64 / 128 * Math.sqrt(4 / Math.max(4, this.ch.length));
+    for (const c of this.ch) {
+      const s = c.sample;
+      if (!c.playing || !s || !s.data.length || c.outPeriod <= 0 || c.outVolume <= 0) continue;
+      const data = s.data, looped = s.loopLength > 0, loopEnd = s.loopStart + s.loopLength, end = looped ? loopEnd : data.length;
+      const step = ModPlayer.PAL / (c.outPeriod * 2) / this.rate;
+      const l = c.outVolume * gain * (1 - c.pan), r = c.outVolume * gain * c.pan;
+      let pos = c.pos;
+      for (let i = from; i < from + count; i++) {
+        if (pos >= end) {
+          if (!looped) { c.playing = false; break; }
+          pos = s.loopStart + (pos - loopEnd) % s.loopLength;
+        }
+        const index = pos | 0, next = index + 1 < end ? index + 1 : looped ? s.loopStart : index, frac = pos - index;
+        const v = data[index] * (1 - frac) + data[next] * frac;
+        outL[i] += v * l; outR[i] += v * r;
+        pos += step;
+      }
+      c.pos = pos;
+    }
+  }
+  advanceTick() {
+    this.tick++;
+    if (this.tick >= this.speed * (this.patternDelay + 1)) {
+      this.tick = 0; this.patternDelay = 0;
+      this.nextRow(); this.processRow();
+    } else for (const c of this.ch) this.tickEffects(c, this.tick % this.speed);
+  }
+  nextRow() {
+    if (this.breakRow >= 0 || this.jump >= 0) {
+      const target = this.jump >= 0 ? this.jump : this.position + 1;
+      this.row = this.breakRow >= 0 ? clamp(this.breakRow, 0, 63) : 0;
+      this.moveTo(target);
+      this.breakRow = -1; this.jump = -1;
+      return;
+    }
+    if (++this.row >= 64) { this.row = 0; this.moveTo(this.position + 1); }
+  }
+  moveTo(target) {
+    if (target >= this.m.order.length) { this.loops++; this.position = this.m.restart; } else this.position = target;
+  }
+  processRow() {
+    const data = this.m.patterns[this.m.order[this.position]], n = this.m.channels;
+    this.ch.forEach((c, index) => {
+      const i = (this.row * n + index) * 4;
+      const period = ((data[i] & 15) << 8) | data[i + 1], instrument = (data[i] & 0xF0) | (data[i + 2] >> 4);
+      c.effect = data[i + 2] & 15; c.param = data[i + 3];
+      if (instrument >= 1 && instrument <= 31) {
+        c.sample = this.m.samples[instrument - 1]; c.volume = c.sample.volume; c.finetune = c.sample.finetune;
+      }
+      const noteDelay = c.effect === 0xE && (c.param >> 4) === 0xD && (c.param & 15) > 0;
+      if (period > 0) {
+        if (c.effect === 3 || c.effect === 5) c.target = ModPlayer.tuned(period, c.finetune);
+        else if (noteDelay) { c.delayedPeriod = period; c.delayedSample = instrument; }
+        else this.trigger(c, period);
+      }
+      c.outVolume = c.volume; c.outPeriod = c.period;
+      this.rowEffects(c);
+    });
+  }
+  trigger(c, period) {
+    if (c.effect === 0xE && (c.param >> 4) === 5) { const f = c.param & 15; c.finetune = f > 7 ? f - 16 : f; }
+    c.note = ModPlayer.nearestNote(period);
+    c.period = ModPlayer.tuned(period, c.finetune);
+    c.pos = 0;
+    c.playing = !!(c.sample && c.sample.data.length);
+    if (c.vibWave < 4) c.vibPos = 0;
+    if (c.tremWave < 4) c.tremPos = 0;
+    if (c.effect === 9) {
+      if (c.param > 0) c.offset = c.param;
+      c.pos = c.offset * 256;
+      if (c.sample && c.pos >= c.sample.data.length && !c.sample.loopLength) c.playing = false;
+    }
+  }
+  rowEffects(c) {
+    const x = c.param >> 4, y = c.param & 15;
+    switch (c.effect) {
+      case 3: if (c.param) c.portaSpeed = c.param; break;
+      case 4: if (x) c.vibSpeed = x; if (y) c.vibDepth = y; break;
+      case 7: if (x) c.tremSpeed = x; if (y) c.tremDepth = y; break;
+      case 0xB: this.jump = c.param; if (this.breakRow < 0) this.breakRow = 0; break;
+      case 0xC: c.volume = Math.min(c.param, 64); c.outVolume = c.volume; break;
+      case 0xD: this.breakRow = x * 10 + y; if (this.jump < 0) this.jump = this.position + 1; break;
+      case 0xE:
+        switch (x) {
+          case 1: c.period = c.outPeriod = Math.max(c.period - y, 113); break;
+          case 2: c.period = c.outPeriod = Math.min(c.period + y, 856); break;
+          case 4: c.vibWave = y; break;
+          case 6:
+            if (y === 0) c.loopRow = this.row;
+            else {
+              c.loopCount = c.loopCount === 0 ? y : c.loopCount - 1;
+              if (c.loopCount > 0) { this.breakRow = c.loopRow; this.jump = this.position; }
+            }
+            break;
+          case 7: c.tremWave = y; break;
+          case 0xA: c.volume = c.outVolume = Math.min(c.volume + y, 64); break;
+          case 0xB: c.volume = c.outVolume = Math.max(c.volume - y, 0); break;
+          case 0xC: if (y === 0) c.volume = c.outVolume = 0; break;
+          case 0xE: this.patternDelay = y; break;
+        }
+        break;
+      case 0xF: if (c.param > 0 && c.param < 32) this.speed = c.param; else if (c.param >= 32) this.tempo = c.param; break;
+    }
+  }
+  tickEffects(c, tick) {
+    const x = c.param >> 4, y = c.param & 15, P = ModPlayer.PERIODS;
+    c.outPeriod = c.period; c.outVolume = c.volume;
+    switch (c.effect) {
+      case 0:
+        if (c.param && c.note >= 0) {
+          const off = tick % 3 === 1 ? x : tick % 3 === 2 ? y : 0;
+          c.outPeriod = ModPlayer.tuned(P[Math.min(c.note + off, P.length - 1)], c.finetune);
+        }
+        break;
+      case 1: c.period = c.outPeriod = Math.max(c.period - c.param, 113); break;
+      case 2: c.period = c.outPeriod = Math.min(c.period + c.param, 856); break;
+      case 3: this.porta(c); break;
+      case 4: this.vibrato(c); break;
+      case 5: this.porta(c); this.slide(c, x, y); break;
+      case 6: this.vibrato(c); this.slide(c, x, y); break;
+      case 7:
+        c.outVolume = clamp(c.volume + ModPlayer.wave(c.tremWave, c.tremPos) * c.tremDepth / 64 | 0, 0, 64);
+        c.tremPos = (c.tremPos + c.tremSpeed) & 63;
+        break;
+      case 0xA: this.slide(c, x, y); break;
+      case 0xE:
+        if (x === 9 && y > 0 && tick % y === 0) { c.pos = 0; c.playing = !!(c.sample && c.sample.data.length); }
+        else if (x === 0xC && tick === y) c.volume = c.outVolume = 0;
+        else if (x === 0xD && tick === y && c.delayedPeriod > 0) {
+          if (c.delayedSample >= 1 && c.delayedSample <= 31) {
+            c.sample = this.m.samples[c.delayedSample - 1]; c.volume = c.sample.volume; c.finetune = c.sample.finetune;
+          }
+          this.trigger(c, c.delayedPeriod);
+          c.delayedPeriod = 0; c.outPeriod = c.period; c.outVolume = c.volume;
+        }
+        break;
+    }
+  }
+  porta(c) {
+    if (c.target <= 0) return;
+    if (c.period < c.target) c.period = Math.min(c.period + c.portaSpeed, c.target);
+    else if (c.period > c.target) c.period = Math.max(c.period - c.portaSpeed, c.target);
+    c.outPeriod = c.period;
+  }
+  vibrato(c) {
+    c.outPeriod = c.period + (ModPlayer.wave(c.vibWave, c.vibPos) * c.vibDepth / 128 | 0);
+    c.vibPos = (c.vibPos + c.vibSpeed) & 63;
+  }
+  slide(c, up, down) { c.volume = c.outVolume = up > 0 ? Math.min(c.volume + up, 64) : Math.max(c.volume - down, 0); }
+  static wave(type, pos) { return (type & 3) === 1 ? 255 - pos * 8 : (type & 3) === 2 ? (pos < 32 ? 255 : -255) : ModPlayer.SINE[pos]; }
+  static tuned(period, ft) { return ft === 0 ? period : Math.round(period * Math.pow(2, -ft / 96)); }
+  static nearestNote(period) {
+    let best = 0;
+    ModPlayer.PERIODS.forEach((p, i) => { if (Math.abs(p - period) < Math.abs(ModPlayer.PERIODS[best] - period)) best = i; });
+    return best;
+  }
+}
+ModPlayer.PAL = 7093789.2;
+ModPlayer.PERIODS = [856, 808, 762, 720, 678, 640, 604, 570, 538, 508, 480, 453, 428, 404, 381, 360, 339, 320, 302, 285, 269, 254, 240, 226,
+  214, 202, 190, 180, 170, 160, 151, 143, 135, 127, 120, 113];
+ModPlayer.SINE = Array.from({length: 64}, (_, i) => Math.round(Math.sin(i * Math.PI / 32) * 255));
+
+// « Prism Drive », la musique originale du jeu (module de 14 Ko, produit par tools/musique/composer_theme.py
+// dans le dépôt Android). Base64 :
+const THEME_MOD = 'cHJpc20gZHJpdmUAAAAAAAAAAABwcmlzbSBsZWFkAAAAAAAAAAAAAAAAABAALgAAABBwcmlzbSBiYXNzAAAAAAAAAAAAAAAAACAANgAAACBwcmlzbSBjaG9yZHMAAAAAAAAAAAAAABAAGgAAABBwcmlzbSBraWNrAAAAAAAAAAAAAAAABS0AQAAAAAFwcmlzbSBzbmFyZQAAAAAAAAAAAAAABIgALAAAAAFwcmlzbSBoaWhhdAAAAAAAAAAAAAAAAXQAHgAAAAFwcmlzbSBiZWxsAAAAAAAAAAAAAAAAABAAMgAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEJAQABAgMEBQYBAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATS5LLgDWQAAB/C7EAAAAAAD+MDcAAAAAAAAAAAAAAAAAAAA3ANZgAAH8LsQAAAAAAAAANwAAAAAAAAAAAAAAAAAAADcAAAAAAP4uxAAAAAAAAAA3AAAAAAAAAAAAAAAAAAAANwDWYAAB/C7EAAAAAAAAADcAAAAAAAAAAAAAAAAAAAA3ANZAAAH8LsQAAAAAAAAANwAAAAAAAAAAAAAAAAAAADcA1mAAAP4uxAAAAAAAAAA3AAAAAAAAAAAAAAAAAAAANwAAAAAB/C7EAAAAAAAAADcAAAAAAAAAAAAAAAAAAAA3ANZgAAFTLsQAAAAAAAAANwAAAAAAAAAAAAAAAAAAADcA1kAAAoAuxAAAAAABQDBHAAAAAAAAAAAAAAAAAAAARwDWYAACgC7EAAAAAAAAAEcAAAAAAAAAAAAAAAAAAABHAAAAAAFALsQAAAAAAAAARwAAAAAAAAAAAAAAAAAAAEcA1mAAAoAuxAAAAAAAAABHAAAAAAAAAAAAAAAAAAAARwDWQAACgC7EAAAAAAAAAEcAAAAAAAAAAAAAAAAAAABHANZgAAFALsQAAAAAAAAARwAAAAAAAAAAAAAAAAAAAEcAAAAAAoAuxAAAAAAAAABHAAAAAAAAAAAAAAAAAAAARwDWYAABrC7EAAAAAAAAAEcAAAAAAAAAAAAAAAAAAABHANZAAANYLsQAAAAAAawwRwAAAAAAAAAAAAAAAAAAAEcA1mAAA1guxAAAAAAAAABHAAAAAAAAAAAAAAAAAAAARwDWUAABrC7EAAAAAAAAAEcAAAAAAAAAAAAAAAAAAABHANZgAANYLsQAAAAAAAAARwAAAAAAAAAAAAAAAAAAAEcA1kAAA1guxAAAAAAAAABHAAAAAAAAAAAAAAAAAAAARwDWYAABrC7EAAAAAAAAAEcAAAAAAAAAAAAAAAAAAABHANZQAANYLsQAAAAA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';
+
+// Musique : celle du jeu par défaut, ou un fichier choisi (module Amiga, MP3, OGG…), lu en boucle pour la session.
 const Music = (() => {
   const el = new Audio();
   el.loop = true;
-  let url = null, name = null;
+  let url = null, name = null, ctx = null, node = null, gain = null, player = null, playing = false;
+  const theme = () => ModModule.parse(Uint8Array.from(atob(THEME_MOD), c => c.charCodeAt(0)));
+  let module = theme();
+  // Le mixage se fait par blocs de 4 096 images (~90 ms) : assez de marge pour ne jamais craquer
+  // pendant une image chargée, et aucune dépendance à un fichier séparé (fonctionne aussi hors ligne).
+  function ensureModule() {
+    if (node || !module) return !!node;
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      ctx = ctx || new Ctx();
+      player = new ModPlayer(module, ctx.sampleRate);
+      gain = ctx.createGain();
+      node = ctx.createScriptProcessor(4096, 0, 2);
+      node.onaudioprocess = e => {
+        const l = e.outputBuffer.getChannelData(0), r = e.outputBuffer.getChannelData(1);
+        if (playing && player) player.render(l, r); else { l.fill(0); r.fill(0); }
+      };
+      node.connect(gain); gain.connect(ctx.destination);
+      return true;
+    } catch (e) { module = null; return false; }
+  }
+  function stopModule() {
+    playing = false;
+    if (node) { node.disconnect(); node.onaudioprocess = null; node = null; }
+    player = null;
+  }
   return {
     get name() { return name; },
-    get loaded() { return url !== null; },
+    get custom() { return name !== null; },
+    get playing() { return url ? !el.paused : playing; },
     load(file, onError) {
-      if (url) URL.revokeObjectURL(url);
-      url = URL.createObjectURL(file); name = file.name;
-      el.src = url;
-      el.onerror = () => { this.clear(); onError(); };
+      file.arrayBuffer().then(buffer => {
+        const bytes = new Uint8Array(buffer);
+        this.clear(false);
+        name = file.name;
+        if (ModModule.looksLikeModule(bytes)) {
+          module = ModModule.parse(bytes);
+          if (!module) { this.clear(); onError(); return; }
+        } else {
+          module = null;
+          url = URL.createObjectURL(file);
+          el.src = url;
+          el.onerror = () => { this.clear(); onError(); };
+        }
+        this.start(app.musicVolume);
+      }).catch(() => { this.clear(); onError(); });
     },
-    clear() { if (url) URL.revokeObjectURL(url); url = null; name = null; el.removeAttribute('src'); el.load(); },
-    setVolume(v) { el.volume = clamp(v / 100, 0, 1); },
-    start(volume) { if (url && volume > 0) { el.volume = volume / 100; el.play().catch(() => {}); } else el.pause(); },
-    pause() { el.pause(); }
+    // Revient à la musique du jeu.
+    clear(restart = true) {
+      if (url) URL.revokeObjectURL(url);
+      url = null; name = null; el.onerror = null; el.removeAttribute('src'); el.load();
+      stopModule();
+      module = theme();
+      if (restart) this.start(app.musicVolume);
+    },
+    setVolume(v) { el.volume = clamp(v / 100, 0, 1); if (gain) gain.gain.value = clamp(v / 100, 0, 1); },
+    start(volume) {
+      if (volume <= 0) { this.pause(); return; }
+      if (url) { el.volume = volume / 100; el.play().catch(() => {}); return; }
+      if (!ensureModule()) return;
+      gain.gain.value = clamp(volume / 100, 0, 1);
+      if (ctx.state === 'suspended') ctx.resume();
+      playing = true;
+    },
+    pause() { el.pause(); playing = false; }
   };
 })();
 
@@ -1005,7 +1306,7 @@ const app = {
   touchSensitivity: prefs.get('touch_sensitivity', 1), gamepadSensitivity: prefs.get('gamepad_sensitivity', 1),
   controlMode: CONTROL_MODES.includes(prefs.get('control_mode')) ? prefs.get('control_mode') : 'RELATIVE',
   selectedDifficulty: Difficulty[prefs.get('difficulty', 'NORMAL')] || Difficulty.NORMAL,
-  effectsVolume: prefs.get('effects_volume', 70), musicVolume: 0, lastMusicVolume: prefs.get('last_music_volume', 35),
+  effectsVolume: prefs.get('effects_volume', 70), musicVolume: prefs.get('music_volume', 35), lastMusicVolume: prefs.get('last_music_volume', 35),
   audioSetupVisible: !prefs.get('audio_setup_done', false), audioSetupFirstRun: !prefs.get('audio_setup_done', false),
   visualEffects: prefs.get('visual_effects', true), highContrast: prefs.get('high_contrast', false),
   reducedMotion: prefs.get('reduced_motion', false) || window.matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -1662,7 +1963,7 @@ function drawTitleScreen() {
   text(t.controlHint[app.controlMode], 180, layout.hintY, 9.5, 0xFFB5C8E2, false);
   option(layout.difficulty, t.difficultyLabel, t.difficulty[app.selectedDifficulty.id], 0xFFB18CFF);
   if (layout.startLevel) option(layout.startLevel, t.startLevelLabel, `${app.startLevel} / ${app.maxLevelReached}`, 0xFFFFD85A);
-  const musicOn = app.musicVolume > 0 && Music.loaded;
+  const musicOn = app.musicVolume > 0;
   option(layout.audio, t.audioLabel, musicOn ? t.musicVolume(app.musicVolume) : t.musicOff, 0xFF63DDFF);
   drawBonusGuide(layout.bonusCard);
   drawTitleScores(layout);
@@ -1738,20 +2039,20 @@ function drawScrollHints(contentHeight, scroll, viewport, hint) {
 }
 
 function drawAudioSetup() {
-  const t = app.t, musicOn = app.musicVolume > 0 && Music.loaded;
+  const t = app.t, musicOn = app.musicVolume > 0;
   ctx.fillStyle = argb(0xF2050916); ctx.fillRect(0, 0, WIDTH, HEIGHT);
   roundRect(28, 99, 332, 557, 18, 0xF20B1422, 0xFF63DDFF, 1.4);
   text(t.soundSetup, 180, 145, 22, 0xFFE8FAFF, true, 'center', true);
-  text(t.musicOffByDefault, 180, 177, 10, 0xFFB5C8E2, false);
+  text(t.musicIntro, 180, 177, 10, 0xFFB5C8E2, false);
   text(t.effectsIndependent, 180, 196, 9, 0xFF7F98BD, false);
   menuButton(55, 220, 305, 265, t.musicToggle(musicOn), musicOn ? 0xFF65E572 : 0xFF718096);
   menuButton(55, 280, 305, 325, t.effectsToggle(app.soundEnabled), app.soundEnabled ? 0xFF65E572 : 0xFF718096);
   menuButton(55, 340, 305, 385, t.chooseMyMusic, 0xFF63DDFF);
   text(shortMusicName(), 180, 414, 8, 0xFF9CB2D3, true, 'center', true);
   menuButton(70, 449, 290, 501, app.audioSetupFirstRun ? t.play : t.confirm, 0xFFFFD85A);
-  text('MP3  •  OGG  •  WAV', 180, 535, 8, 0xFF7F98BD, true, 'center', true);
+  text('MP3  •  OGG  •  WAV  •  MOD', 180, 535, 8, 0xFF7F98BD, true, 'center', true);
 }
-function shortMusicName() { const n = Music.name; if (!n) return app.t.noTrackSelected; return n.length <= 30 ? n : n.slice(0, 27) + '...'; }
+function shortMusicName() { const n = Music.name; if (!n) return app.t.gameTheme; return n.length <= 30 ? n : n.slice(0, 27) + '...'; }
 
 // --- réglages
 
@@ -1777,10 +2078,10 @@ function drawSettingsScreen() {
 }
 
 function drawSettingRow(row) {
-  const t = app.t, b = row.box, hasMusic = Music.loaded, label = t.setting[row.id];
+  const t = app.t, b = row.box, label = t.setting[row.id];
   const values = {
     SOUND: [null, app.soundEnabled], EFFECTS_VOLUME: [`${app.effectsVolume} %`, null],
-    MUSIC: hasMusic ? [null, app.musicVolume > 0] : [t.noTrack, null], MUSIC_VOLUME: [hasMusic ? `${app.musicVolume} %` : '—', null],
+    MUSIC: [null, app.musicVolume > 0], MUSIC_VOLUME: [`${app.musicVolume} %`, null],
     CONTROLS: [t.controlMode[app.controlMode], null], TOUCH_SENSITIVITY: [sensitivityLabel(app.touchSensitivity), null],
     GAMEPAD_SENSITIVITY: [sensitivityLabel(app.gamepadSensitivity), null], HAPTICS: [null, app.hapticsEnabled],
     LANGUAGE: [t.languageName, null], VISUAL_EFFECTS: [null, app.visualEffects], HIGH_CONTRAST: [null, app.highContrast],
@@ -1798,7 +2099,7 @@ function drawSettingRow(row) {
     roundRect(b.right - 52, b.centerY - 10, b.right - 16, b.centerY + 10, 10, on ? 0xFF2F9E5A : 0xFF33445A);
     circle(on ? b.right - 26 : b.right - 42, b.centerY, 7.5, 0xFFFFFFFF);
   } else if (!value) {
-    const enabled = row.id !== 'MUSIC_REMOVE' || hasMusic;
+    const enabled = row.id !== 'MUSIC_REMOVE' || Music.custom;
     const color = !enabled ? 0xFF52657E : row.id === 'MUSIC_REMOVE' ? 0xFFFF7180 : (row.id === 'EXPORT' || row.id === 'IMPORT') ? 0xFFFFD85A : 0xFF63DDFF;
     text(label, b.centerX, b.centerY + 4, 10.5, color, true, 'center', true);
   } else {
@@ -1989,9 +2290,9 @@ function handleSettingsTouch(x, y) {
     case 'SOUND': app.soundEnabled = !app.soundEnabled; prefs.set('sound_enabled', app.soundEnabled); break;
     case 'EFFECTS_VOLUME': app.effectsVolume = nextFineVolume(app.effectsVolume); Sound.setVolume(app.effectsVolume); prefs.set('effects_volume', app.effectsVolume); Sound.play('PADDLE'); break;
     case 'MUSIC': toggleMusic(); break;
-    case 'MUSIC_VOLUME': if (!Music.loaded) chooseMusic(); else updateMusicVolume(nextFineVolume(app.musicVolume)); break;
+    case 'MUSIC_VOLUME': updateMusicVolume(nextFineVolume(app.musicVolume)); break;
     case 'MUSIC_CHOOSE': chooseMusic(); break;
-    case 'MUSIC_REMOVE': if (Music.loaded) { Music.clear(); app.musicVolume = 0; } break;
+    case 'MUSIC_REMOVE': if (Music.custom) Music.clear(); break;
     case 'CONTROLS': app.controlMode = CONTROL_MODES[(CONTROL_MODES.indexOf(app.controlMode) + 1) % 3]; app.zoneDirection = 0; prefs.set('control_mode', app.controlMode); break;
     case 'TOUCH_SENSITIVITY': app.touchSensitivity = nextSensitivity(app.touchSensitivity); prefs.set('touch_sensitivity', app.touchSensitivity); break;
     case 'GAMEPAD_SENSITIVITY': app.gamepadSensitivity = nextSensitivity(app.gamepadSensitivity); prefs.set('gamepad_sensitivity', app.gamepadSensitivity); break;
@@ -2006,10 +2307,11 @@ function handleSettingsTouch(x, y) {
   }
 }
 
-function toggleMusic() { if (!Music.loaded) chooseMusic(); else updateMusicVolume(app.musicVolume === 0 ? app.lastMusicVolume : 0); }
+function toggleMusic() { updateMusicVolume(app.musicVolume === 0 ? app.lastMusicVolume : 0); }
 function updateMusicVolume(v) {
   app.musicVolume = clamp(v, 0, 100);
   if (app.musicVolume > 0) { app.lastMusicVolume = app.musicVolume; prefs.set('last_music_volume', app.lastMusicVolume); }
+  prefs.set('music_volume', app.musicVolume);
   Music.setVolume(app.musicVolume);
   Music.start(app.musicVolume);
 }
@@ -2018,8 +2320,8 @@ document.getElementById('fichier-musique').addEventListener('change', e => {
   const file = e.target.files[0];
   e.target.value = '';
   if (!file) return;
-  Music.load(file, () => { app.musicVolume = 0; toast(app.t.unreadableAudio); });
-  updateMusicVolume(app.musicVolume === 0 ? app.lastMusicVolume : app.musicVolume);
+  if (app.musicVolume === 0) updateMusicVolume(app.lastMusicVolume);
+  Music.load(file, () => toast(app.t.unreadableAudio));
 });
 
 // Sauvegarde : un fichier JSON avec les réglages, les scores et la progression.
@@ -2288,8 +2590,8 @@ function updateDirectionalControls(dt) {
 
 // La partie se met en pause quand la page passe en arrière-plan.
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) { if (!app.demoMode) engine.pause(); releaseControls(); Music.pause(); app.running = false; }
-  else { app.running = true; app.lastFrame = 0; app.accumulator = 0; app.lastInteraction = performance.now(); Music.start(app.musicVolume); }
+  if (document.hidden) { if (!app.demoMode) engine.pause(); releaseControls(); app.musicWasPlaying = Music.playing; Music.pause(); app.running = false; }
+  else { app.running = true; app.lastFrame = 0; app.accumulator = 0; app.lastInteraction = performance.now(); if (app.musicWasPlaying) Music.start(app.musicVolume); }
 });
 window.addEventListener('blur', () => { if (!app.demoMode) engine.pause(); releaseControls(); });
 
