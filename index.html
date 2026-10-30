@@ -159,7 +159,7 @@ const TEXTS = {
     musicVolume: v => `MUSIQUE ${v} %`, musicOff: 'MUSIQUE NON', bonusGuide: 'GUIDE DES BONUS', tapNext: 'TOUCHE ›',
     topPilots: 'MEILLEURS PILOTES', currentRecord: s => `RECORD ACTUEL  ${s}`, noScore: 'AUCUN SCORE ENREGISTRÉ',
     footer: 'Sans publicité, sans connexion, sans compte', titleScrollHint: '▼  GLISSE : GUIDE DES BONUS ET SCORES',
-    soundSetup: 'AMBIANCE SONORE', musicIntro: 'Musique originale du jeu, ou la vôtre.', effectsIndependent: 'Les effets du jeu restent indépendants.',
+    soundSetup: 'AMBIANCE SONORE', musicIntro: 'Musique coupée par défaut : celle du jeu ou la vôtre.', effectsIndependent: 'Les effets du jeu restent indépendants.',
     musicToggle: e => `MUSIQUE  ${e ? 'OUI' : 'NON'}`, effectsToggle: e => `EFFETS SONORES  ${e ? 'OUI' : 'NON'}`,
     chooseMyMusic: 'CHOISIR MA MUSIQUE', confirm: 'VALIDER', gameTheme: 'PRISM DRIVE · MUSIQUE DU JEU',
     score: 'SCORE', best: s => `RECORD ${s}`, levelOf: l => `NIVEAU ${l}/30`, lives: 'VIES',
@@ -178,7 +178,13 @@ const TEXTS = {
     pause: 'PAUSE', stageAndDifficulty: (l, d) => `TABLEAU ${l}  •  ${d}`, resume: 'REPRENDRE', restart: 'RECOMMENCER',
     settings: 'RÉGLAGES', quitToTitle: "QUITTER VERS L'ACCUEIL", resumeNote: "Reprise au début du tableau en cas d'interruption.",
     gamepadSupported: 'MANETTE ET CLAVIER PRIS EN CHARGE', pauseKeys: 'ÉCHAP, START OU P = REPRENDRE',
-    settingsSubtitle: 'Enregistrés automatiquement  •  partie en pause',
+    settingsSubtitle: 'Enregistrés automatiquement  •  partie en pause', titleSettingsSubtitle: 'Enregistrés automatiquement',
+    modeLabel: 'MODE DE JEU', mode: {CLASSIC: 'CLASSIQUE', TIME_ATTACK: 'CHRONO', SURVIVAL: 'SURVIE', DAILY: 'DÉFI DU JOUR'},
+    modeHint: {CLASSIC: '', TIME_ATTACK: '90 s, +30 s par tableau, une balle perdue coûte 10 s',
+      SURVIVAL: 'Le mur descend de plus en plus vite : tiens bon', DAILY: '3 tableaux inédits, les mêmes pour tous, chaque jour'},
+    modeIs: m => `MODE ${m}`, timeLeft: n => `TEMPS ${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`,
+    wave: n => `VAGUE ${n}`, dailyStage: (n, c) => `DÉFI ${n}/${c}`, timeUp: 'TEMPS ÉCOULÉ', wallFell: 'LE MUR EST TOMBÉ',
+    dailyDone: 'DÉFI RELEVÉ !',
     section: {SOUND: 'SON', CONTROLS: 'COMMANDES', DISPLAY: 'AFFICHAGE', BACKUP: 'SAUVEGARDE'},
     setting: {SOUND: 'EFFETS SONORES', EFFECTS_VOLUME: 'VOLUME DES EFFETS', MUSIC: 'MUSIQUE', MUSIC_VOLUME: 'VOLUME DE LA MUSIQUE',
       MUSIC_CHOOSE: 'CHOISIR UNE PISTE', MUSIC_REMOVE: 'MUSIQUE DU JEU', CONTROLS: 'CONTRÔLES', TOUCH_SENSITIVITY: 'SENSIBILITÉ TACTILE',
@@ -210,7 +216,7 @@ const TEXTS = {
     musicVolume: v => `MUSIC ${v} %`, musicOff: 'MUSIC OFF', bonusGuide: 'BONUS GUIDE', tapNext: 'TAP ›',
     topPilots: 'TOP PILOTS', currentRecord: s => `CURRENT RECORD  ${s}`, noScore: 'NO SCORE YET',
     footer: 'No ads, no Internet connection, no account', titleScrollHint: '▼  SWIPE: BONUS GUIDE AND SCORES',
-    soundSetup: 'SOUND SETUP', musicIntro: "The game's own music, or yours.", effectsIndependent: 'Game sound effects are set separately.',
+    soundSetup: 'SOUND SETUP', musicIntro: "Music is off by default: the game's own, or yours.", effectsIndependent: 'Game sound effects are set separately.',
     musicToggle: e => `MUSIC  ${e ? 'ON' : 'OFF'}`, effectsToggle: e => `SOUND EFFECTS  ${e ? 'ON' : 'OFF'}`,
     chooseMyMusic: 'CHOOSE MY MUSIC', confirm: 'OK', gameTheme: 'PRISM DRIVE · GAME MUSIC',
     score: 'SCORE', best: s => `BEST ${s}`, levelOf: l => `LEVEL ${l}/30`, lives: 'LIVES',
@@ -229,7 +235,13 @@ const TEXTS = {
     pause: 'PAUSE', stageAndDifficulty: (l, d) => `STAGE ${l}  •  ${d}`, resume: 'RESUME', restart: 'RESTART',
     settings: 'SETTINGS', quitToTitle: 'QUIT TO TITLE SCREEN', resumeNote: 'If interrupted, you resume at the start of the stage.',
     gamepadSupported: 'GAMEPAD AND KEYBOARD SUPPORTED', pauseKeys: 'ESC, START OR P = RESUME',
-    settingsSubtitle: 'Saved automatically  •  game paused',
+    settingsSubtitle: 'Saved automatically  •  game paused', titleSettingsSubtitle: 'Saved automatically',
+    modeLabel: 'GAME MODE', mode: {CLASSIC: 'CLASSIC', TIME_ATTACK: 'TIME ATTACK', SURVIVAL: 'SURVIVAL', DAILY: 'DAILY CHALLENGE'},
+    modeHint: {CLASSIC: '', TIME_ATTACK: '90 s, +30 s per stage, a lost ball costs 10 s',
+      SURVIVAL: 'The wall comes down faster and faster: hold on', DAILY: '3 new stages, the same for everyone, every day'},
+    modeIs: m => `MODE ${m}`, timeLeft: n => `TIME ${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`,
+    wave: n => `WAVE ${n}`, dailyStage: (n, c) => `CHALLENGE ${n}/${c}`, timeUp: "TIME'S UP", wallFell: 'THE WALL CAME DOWN',
+    dailyDone: 'CHALLENGE COMPLETE!',
     section: {SOUND: 'SOUND', CONTROLS: 'CONTROLS', DISPLAY: 'DISPLAY', BACKUP: 'BACKUP'},
     setting: {SOUND: 'SOUND EFFECTS', EFFECTS_VOLUME: 'EFFECTS VOLUME', MUSIC: 'MUSIC', MUSIC_VOLUME: 'MUSIC VOLUME',
       MUSIC_CHOOSE: 'CHOOSE A TRACK', MUSIC_REMOVE: 'GAME MUSIC', CONTROLS: 'CONTROLS', TOUCH_SENSITIVITY: 'TOUCH SENSITIVITY',
@@ -271,12 +283,16 @@ const DEFAULT_SCORES = [
   ['CAT', 6000], ['BOB', 2500]
 ].map(([name, score]) => ({name, score}));
 const sortScores = list => list.slice().sort((a, b) => b.score - a.score || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
-const scoreKey = d => 'scores_' + d.id;
+// Classique : un top 20 par difficulté, à partir du classement par défaut. Autres modes : un top 20 vide au
+// départ ; celui du défi ne garde que les scores du jour.
+const scoreKey = (d, mode = 'CLASSIC') => mode === 'CLASSIC' ? 'scores_' + d.id : 'scores_' + mode.toLowerCase();
+const today = () => dailySeed(new Date());
 const HighScores = {
-  entries(d) {
-    const local = (prefs.get(scoreKey(d), []) || []).filter(e => e && typeof e.name === 'string' && e.score > 0);
+  entries(d, mode = 'CLASSIC') {
+    let local = (prefs.get(scoreKey(d, mode), []) || []).filter(e => e && typeof e.name === 'string' && e.score > 0);
+    if (mode === 'DAILY' && prefs.get('scores_daily_date', 0) !== today()) local = [];
     const seen = new Set();
-    return sortScores(DEFAULT_SCORES.concat(local)).filter(e => {
+    return sortScores((mode === 'CLASSIC' ? DEFAULT_SCORES : []).concat(local)).filter(e => {
       const k = e.name + '|' + e.score;
       if (seen.has(k)) return false;
       seen.add(k);
@@ -284,10 +300,11 @@ const HighScores = {
     }).slice(0, MAX_ENTRIES);
   },
   qualifies(entries, score) { return score > 0 && (entries.length < MAX_ENTRIES || score > entries[entries.length - 1].score); },
-  add(d, name, score) {
+  add(d, name, score, mode = 'CLASSIC') {
     const clean = name.trim().slice(0, MAX_NAME_LENGTH);
-    const updated = sortScores(HighScores.entries(d).concat([{name: clean, score}])).slice(0, MAX_ENTRIES);
-    prefs.set(scoreKey(d), updated);
+    const updated = sortScores(HighScores.entries(d, mode).concat([{name: clean, score}])).slice(0, MAX_ENTRIES);
+    prefs.set(scoreKey(d, mode), updated);
+    if (mode === 'DAILY') prefs.set('scores_daily_date', today());
     prefs.set('player_name', clean);
     return updated;
   }
@@ -351,6 +368,68 @@ function decodeLevel(level) {
   return bricks;
 }
 
+// Tableaux générés pour les modes Survie et Défi du jour : symétriques, sans bloc indestructible,
+// les quatre dernières rangées libres. Le défi suit exactement LevelGenerator.kt (même tirage mulberry32) :
+// il est identique dans le navigateur et sur Android.
+const DAILY_STAGES = 3, GEN_LAST_ROW = 15;
+const emptyCell = () => ({color: 0, maxHits: 0, hits: 0, solid: false});
+const cell = (color, hits) => ({color, maxHits: hits, hits, solid: false});
+const dailySeed = date => date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+
+function generatedRow(random, rowsAdded) {
+  const maxHits = Math.min(1 + Math.floor(rowsAdded / 14), 3);
+  const color = 1 + random.nextInt(7), accent = 1 + (color + random.nextInt(5)) % 7;
+  const half = [];
+  const kind = random.nextInt(5);
+  for (let i = 0; i < 10; i++) {
+    if (kind === 0) half.push(cell(color, random.nextInt(4) === 0 ? maxHits : 1));
+    else if (kind === 1) half.push(i % 3 === 2 ? emptyCell() : cell(color, 1 + random.nextInt(maxHits)));
+    else if (kind === 2) half.push(cell(i % 2 === 0 ? color : accent, 1));
+    else if (kind === 3) half.push(i % 4 < 2 ? cell(accent, maxHits) : emptyCell());
+    else half.push(random.nextInt(3) > 0 ? cell(color, 1 + random.nextInt(maxHits)) : emptyCell());
+  }
+  return Array.from({length: COLS}, (_, c) => Object.assign({}, c < 10 ? half[9 - c] : half[c - 10]));
+}
+
+function survivalStart(random) {
+  const grid = Array.from({length: ROWS * COLS}, emptyCell);
+  for (let r = 0; r < 6; r++) generatedRow(random, 0).forEach((b, c) => { grid[r * COLS + c] = b; });
+  return grid;
+}
+
+function dailyLevel(seed, stage) {
+  const random = mulberry32((seed * 31 + stage) | 0);
+  const grid = Array.from({length: ROWS * COLS}, emptyCell);
+  const top = 1 + random.nextInt(2);
+  const bottom = Math.min(top + 9 + stage + random.nextInt(3), GEN_LAST_ROW);
+  const palette = [1 + random.nextInt(7), 1 + random.nextInt(7), 1 + random.nextInt(7)];
+  const maxHits = Math.min(stage + 1, 3), shape = random.nextInt(6), centerRow = (top + bottom) / 2;
+  for (let r = top; r <= bottom; r++) for (let c = 0; c < 10; c++) {
+    const x = c + 0.5, y = r - centerRow;
+    let filled;
+    switch (shape) {
+      case 0: filled = Math.abs(x) + Math.abs(y) * 1.2 < 8.5; break;
+      case 1: filled = (r + c) % 4 !== 0; break;
+      case 2: { const d = Math.sqrt(x * x + y * 1.3 * (y * 1.3)); filled = d < 9 && d > 4; break; }
+      case 3: filled = r % 3 !== 1 || c % 3 === 0; break;
+      case 4: filled = (Math.floor(c / 2) + Math.floor(r / 2)) % 2 === 0; break;
+      default: filled = random.nextInt(10) < 7;
+    }
+    if (!filled) continue;
+    const band = clamp(Math.floor((r - top) * 3 / (bottom - top + 1)), 0, 2);
+    const hits = (r === top || random.nextInt(6) === 0) ? maxHits : 1 + random.nextInt(maxHits);
+    grid[r * COLS + 10 + c] = cell(palette[band], hits);
+    grid[r * COLS + 9 - c] = cell(palette[band], hits);
+  }
+  if (!grid.some(b => b.hits > 0)) for (let c = 4; c < COLS - 4; c++) grid[(top + 2) * COLS + c] = cell(palette[0], 1);
+  return grid;
+}
+
+const MODES = ['CLASSIC', 'TIME_ATTACK', 'SURVIVAL', 'DAILY'];
+const TIME_ATTACK_START = 90, TIME_ATTACK_LEVEL_BONUS = 30, TIME_ATTACK_PENALTY = 10, TIME_ATTACK_LIFE_BONUS = 10;
+const SURVIVAL_FIRST_INTERVAL = 12, SURVIVAL_MIN_INTERVAL = 4, SURVIVAL_SPEEDUP = 0.97, SURVIVAL_ROWS_PER_WAVE = 10;
+const SURVIVAL_ROW_POINTS = 20, SURVIVAL_CLEAR_BONUS = 1500;
+
 function newStats() {
   return {bricksDestroyed: 0, powerUpsCollected: 0, levelsCompleted: 0, laserShots: 0, laserHits: 0, currentCombo: 0, bestCombo: 0};
 }
@@ -360,6 +439,7 @@ class Engine {
   constructor() {
     this.s = {
       screen: 'TITLE', score: 0, highScore: 0, lives: 3, level: 1, difficulty: Difficulty.NORMAL, stats: newStats(),
+      mode: 'CLASSIC', timeLeft: 0, levelOrder: [], advanceClock: 0, advanceInterval: 0, rowsAdded: 0, dailySeed: 0,
       nextExtraLife: 10000, paddleX: WIDTH / 2, paddleWidth: 66, wideTime: 0, stickyTime: 0, laserTime: 0,
       laserCooldown: 0, stateTime: 0, wormClock: 9, bricks: [], fireHeld: false, balls: [], powerUps: [],
       lasers: [], worms: [], particles: [], random: mulberry32(1987)
@@ -369,18 +449,27 @@ class Engine {
     this.contacts = [];
   }
 
-  startNewGame(difficulty, startLevel = 1) {
+  // Hors du mode Classique : difficulté Normale, premier tableau ; seed mélange le Chrono et le mur de la Survie.
+  startNewGame(difficulty, startLevel = 1, mode = 'CLASSIC', seed = 1987, daily = 0) {
     const s = this.s;
     this.demonstration = false;
-    s.difficulty = difficulty; s.score = 0; s.lives = difficulty.initialLives;
-    s.level = clamp(startLevel, 1, LEVEL_COUNT); s.stats = newStats();
-    s.nextExtraLife = difficulty.extraLifeThreshold; s.random = mulberry32(1987);
+    s.mode = mode;
+    s.difficulty = mode === 'CLASSIC' ? difficulty : Difficulty.NORMAL;
+    s.score = 0; s.lives = s.difficulty.initialLives;
+    s.level = mode === 'CLASSIC' ? clamp(startLevel, 1, LEVEL_COUNT) : 1; s.stats = newStats();
+    s.nextExtraLife = s.difficulty.extraLifeThreshold; s.random = mulberry32(seed);
+    s.timeLeft = TIME_ATTACK_START;
+    const order = Array.from({length: LEVEL_COUNT}, (_, i) => i + 1), shuffle = mulberry32(seed ^ 0x5bd1e995);
+    for (let i = order.length - 1; i > 0; i--) { const j = shuffle.nextInt(i + 1); [order[i], order[j]] = [order[j], order[i]]; }
+    s.levelOrder = order;
+    s.advanceInterval = s.advanceClock = SURVIVAL_FIRST_INTERVAL; s.rowsAdded = 0; s.dailySeed = daily;
     this.loadLevel();
   }
 
   startDemo(level) {
     const s = this.s;
     this.demonstration = true;
+    s.mode = 'CLASSIC';
     s.difficulty = Difficulty.NORMAL; s.score = 0; s.lives = 3; s.level = clamp(level, 1, LEVEL_COUNT);
     s.stats = newStats(); s.nextExtraLife = Infinity; s.random = mulberry32(1987 + s.level);
     this.loadLevel();
@@ -389,6 +478,7 @@ class Engine {
   continueGame(level, score, lives, difficulty, stats) {
     const s = this.s;
     this.demonstration = false;
+    s.mode = 'CLASSIC';
     s.difficulty = difficulty; s.level = clamp(level, 1, LEVEL_COUNT); s.score = Math.max(0, score);
     s.lives = clamp(lives, 1, 9); s.stats = stats; s.nextExtraLife = difficulty.extraLifeThreshold;
     while (s.nextExtraLife <= s.score) s.nextExtraLife += difficulty.extraLifeThreshold;
@@ -398,7 +488,11 @@ class Engine {
 
   loadLevel() {
     const s = this.s;
-    s.bricks = decodeLevel(s.level); s.screen = 'INTRO'; s.stateTime = 0; s.wormClock = 8; s.paddleX = WIDTH / 2;
+    s.bricks = s.mode === 'TIME_ATTACK' ? decodeLevel(s.levelOrder[(s.level - 1) % s.levelOrder.length])
+      : s.mode === 'SURVIVAL' ? survivalStart(s.random)
+      : s.mode === 'DAILY' ? dailyLevel(s.dailySeed, s.level)
+      : decodeLevel(s.level);
+    s.screen = 'INTRO'; s.stateTime = 0; s.wormClock = 8; s.paddleX = WIDTH / 2;
     this.resetVolley();
   }
 
@@ -456,12 +550,21 @@ class Engine {
       s.stateTime += dt;
       this.updateParticles(dt);
       if (s.stateTime >= 1.8) {
-        if (s.level >= LEVEL_COUNT) s.screen = 'VICTORY'; else { s.level++; this.loadLevel(); }
+        const last = s.mode === 'CLASSIC' ? s.level >= LEVEL_COUNT : s.mode === 'DAILY' ? s.level >= DAILY_STAGES : false;
+        if (last) s.screen = 'VICTORY'; else { s.level++; this.loadLevel(); }
       }
       return;
     }
     if (s.screen !== 'PLAYING') return;
     s.stateTime += dt;
+    if (s.mode === 'TIME_ATTACK') {
+      s.timeLeft -= dt;
+      if (s.timeLeft <= 0) { s.timeLeft = 0; this.endRun(); return; }
+    }
+    if (s.mode === 'SURVIVAL') {
+      s.advanceClock -= dt;
+      if (s.advanceClock <= 0) { this.advanceWall(1); if (s.screen !== 'PLAYING') return; }
+    }
     s.wideTime = Math.max(0, s.wideTime - dt);
     const stickyWasActive = s.stickyTime > 0;
     s.stickyTime = Math.max(0, s.stickyTime - dt);
@@ -485,7 +588,60 @@ class Engine {
       if (s.worms.length < 2 && remaining >= 1 && remaining <= 260) this.spawnWorm();
       s.wormClock = 10 + s.random.nextFloat() * 8;
     }
-    if (this.remainingBricks() === 0) this.completeLevel();
+    if (this.remainingBricks() === 0) {
+      // Survie : mur nettoyé, bonus, et trois rangées tombent aussitôt.
+      if (s.mode === 'SURVIVAL') { this.addScore(SURVIVAL_CLEAR_BONUS); this.onEvent('LEVEL'); this.advanceWall(3); }
+      else this.completeLevel();
+    }
+  }
+
+  // Survie : le mur descend ; si un cristal occupe déjà la dernière rangée, la partie s'arrête.
+  advanceWall(rows) {
+    const s = this.s;
+    for (let k = 0; k < rows; k++) {
+      for (let i = (ROWS - 1) * COLS; i < ROWS * COLS; i++) if (s.bricks[i].hits > 0) { this.endRun(); return; }
+      for (let i = ROWS * COLS - 1; i >= COLS; i--) s.bricks[i] = s.bricks[i - COLS];
+      generatedRow(s.random, s.rowsAdded).forEach((b, c) => { s.bricks[c] = b; });
+      s.rowsAdded++;
+      this.addScore(SURVIVAL_ROW_POINTS);
+    }
+    s.level = 1 + Math.floor(s.rowsAdded / SURVIVAL_ROWS_PER_WAVE);
+    s.advanceInterval = Math.max(SURVIVAL_MIN_INTERVAL, s.advanceInterval * SURVIVAL_SPEEDUP);
+    s.advanceClock = s.advanceInterval;
+    // Une balle rattrapée par le mur est replacée juste sous la rangée qui l'a recouverte.
+    for (const b of s.balls) {
+      if (b.stuck) continue;
+      const row = Math.floor((b.y - BRICK_TOP) / BRICK_HEIGHT), col = Math.floor((b.x - LEFT) / BRICK_WIDTH);
+      if (row < 0 || row >= ROWS || col < 0 || col >= COLS) continue;
+      let below = row;
+      while (below < ROWS && s.bricks[below * COLS + col].hits > 0) below++;
+      if (below !== row) { b.y = BRICK_TOP + below * BRICK_HEIGHT + b.radius + 0.02; b.vy = Math.abs(b.vy); }
+    }
+  }
+
+  // Fin sans perte de vie : temps écoulé (Chrono) ou mur arrivé en bas (Survie).
+  endRun() {
+    const s = this.s;
+    s.screen = 'GAME_OVER'; s.balls = []; s.powerUps = []; s.lasers = []; s.worms = [];
+    this.onEvent('LOST');
+  }
+
+  // Survie : le saut de tableau efface la rangée la plus basse du mur.
+  clearLowestRow() {
+    const s = this.s;
+    for (let row = ROWS - 1; row >= 0; row--) {
+      const cells = [];
+      for (let i = row * COLS; i < (row + 1) * COLS; i++) if (s.bricks[i].hits > 0) cells.push(i);
+      if (!cells.length) continue;
+      for (const i of cells) {
+        s.bricks[i] = emptyCell(); s.stats.bricksDestroyed++; s.stats.currentCombo++;
+        s.stats.bestCombo = Math.max(s.stats.bestCombo, s.stats.currentCombo);
+        this.addScore(60);
+        this.burst(LEFT + (i % COLS) * BRICK_WIDTH + BRICK_WIDTH / 2, BRICK_TOP + row * BRICK_HEIGHT + BRICK_HEIGHT / 2, crystalColor(1 + i % 7), 2);
+      }
+      this.onEvent('BRICK');
+      return;
+    }
   }
 
   updateBalls(dt) {
@@ -642,8 +798,8 @@ class Engine {
       case 'STICKY': s.stickyTime = 15; break;
       case 'MULTI': this.splitBalls(); break;
       case 'LASER': s.laserTime = 12; break;
-      case 'LIFE': s.lives = Math.min(9, s.lives + 1); break;
-      case 'SKIP': this.completeLevel(); break;
+      case 'LIFE': if (s.mode === 'TIME_ATTACK') s.timeLeft += TIME_ATTACK_LIFE_BONUS; else s.lives = Math.min(9, s.lives + 1); break;
+      case 'SKIP': if (s.mode === 'SURVIVAL') this.clearLowestRow(); else this.completeLevel(); break;
       case 'DEATH': this.loseLife(); break;
     }
     if (type !== 'DEATH') { this.addScore(250); this.onEvent('POWER'); }
@@ -738,6 +894,14 @@ class Engine {
   loseLife() {
     const s = this.s;
     if (s.screen !== 'PLAYING') return;
+    if (s.mode === 'TIME_ATTACK') {
+      // Chrono : pas de vies, chaque balle perdue coûte du temps.
+      s.stats.currentCombo = 0;
+      s.timeLeft = Math.max(0, s.timeLeft - TIME_ATTACK_PENALTY);
+      this.onEvent('LOST');
+      if (s.timeLeft <= 0) this.endRun(); else this.resetVolley();
+      return;
+    }
     s.lives--; s.stats.currentCombo = 0;
     this.onEvent('LOST');
     if (s.lives <= 0) { s.lives = 0; s.screen = 'GAME_OVER'; s.balls = []; } else this.resetVolley();
@@ -746,7 +910,8 @@ class Engine {
   completeLevel() {
     const s = this.s;
     if (s.screen !== 'PLAYING') return;
-    this.addScore(1000 + s.lives * 100);
+    if (s.mode === 'TIME_ATTACK') { this.addScore(1000 + Math.floor(s.timeLeft) * 10); s.timeLeft += TIME_ATTACK_LEVEL_BONUS; }
+    else this.addScore(1000 + s.lives * 100);
     s.stats.levelsCompleted++;
     s.screen = 'LEVEL_CLEAR'; s.stateTime = 0; s.powerUps = []; s.lasers = []; s.worms = [];
     this.onEvent('LEVEL');
@@ -1207,16 +1372,19 @@ const Music = (() => {
 // ------------------------------------------------------------------ mises en page (accueil, réglages, initiales)
 
 class TitleLayout {
-  constructor(hasProgress, scoreRows, hasStartChoice) {
+  constructor(hasProgress, scoreRows, hasStartChoice, hasDifficulty = true) {
     const M = 28, W = WIDTH;
     this.crystalY = 100; this.titleLine1Y = 212; this.titleLine2Y = 256; this.subtitleY = 286;
+    this.settings = new Box(W - M - 40, 20, W - M + 4, 64); // roue dentée, en haut à droite
     let y = 318;
     this.primary = new Box(M + 12, y, W - M - 12, y + 58);
     y = this.primary.bottom;
     this.secondary = null;
     if (hasProgress) { this.secondary = new Box(M + 44, y + 12, W - M - 44, y + 56); y = this.secondary.bottom; }
     this.hintY = y + 26; y = this.hintY + 24;
-    this.difficulty = new Box(M, y, W - M, y + 48); y = this.difficulty.bottom + 12;
+    this.mode = new Box(M, y, W - M, y + 48); y = this.mode.bottom + 12;
+    this.difficulty = null; // la difficulté ne se choisit qu'en mode Classique
+    if (hasDifficulty) { this.difficulty = new Box(M, y, W - M, y + 48); y = this.difficulty.bottom + 12; }
     this.startLevel = null;
     if (hasStartChoice) { this.startLevel = new Box(M, y, W - M, y + 48); y = this.startLevel.bottom + 12; }
     this.audio = new Box(M, y, W - M, y + 48); y = this.audio.bottom + 28;
@@ -1306,7 +1474,8 @@ const app = {
   touchSensitivity: prefs.get('touch_sensitivity', 1), gamepadSensitivity: prefs.get('gamepad_sensitivity', 1),
   controlMode: CONTROL_MODES.includes(prefs.get('control_mode')) ? prefs.get('control_mode') : 'RELATIVE',
   selectedDifficulty: Difficulty[prefs.get('difficulty', 'NORMAL')] || Difficulty.NORMAL,
-  effectsVolume: prefs.get('effects_volume', 70), musicVolume: prefs.get('music_volume', 35), lastMusicVolume: prefs.get('last_music_volume', 35),
+  selectedMode: MODES.includes(prefs.get('game_mode')) ? prefs.get('game_mode') : 'CLASSIC', leaderboardMode: 'CLASSIC',
+  effectsVolume: prefs.get('effects_volume', 70), musicVolume: prefs.get('music_volume', 0), lastMusicVolume: prefs.get('last_music_volume', 35),
   audioSetupVisible: !prefs.get('audio_setup_done', false), audioSetupFirstRun: !prefs.get('audio_setup_done', false),
   visualEffects: prefs.get('visual_effects', true), highContrast: prefs.get('high_contrast', false),
   reducedMotion: prefs.get('reduced_motion', false) || window.matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -1324,12 +1493,14 @@ app.startLevel = clamp(prefs.get('start_level', 1), 1, app.maxLevelReached);
 const DEMO_LEVELS = [1, 8, 15, 22, 29, 30];
 const motionClock = () => app.reducedMotion ? 0 : app.clock;
 
-function showLeaderboard(d) {
-  app.leaderboardDifficulty = d;
-  app.leaderboard = HighScores.entries(d);
+function showLeaderboard(d, mode = app.selectedMode) {
+  app.leaderboardDifficulty = d; app.leaderboardMode = mode;
+  app.leaderboard = HighScores.entries(d, mode);
   st.highScore = app.leaderboard.length ? app.leaderboard[0].score : 0;
 }
 showLeaderboard(app.selectedDifficulty);
+// Intitulé d'un classement : la difficulté en Classique, sinon le nom du mode.
+const boardLabel = (mode, d) => mode === 'CLASSIC' ? app.t.difficulty[d.id] : app.t.mode[mode];
 Sound.setVolume(app.effectsVolume);
 
 function toast(message) {
@@ -1722,8 +1893,20 @@ function drawHud() {
   text(t.score, 14, 14, 8, 0xFF7F98BD, true, 'left');
   text(pad6(st.score), 14, 33, 18, 0xFFFFFFFF, true, 'left');
   text(t.best(pad6(st.highScore)), 14, 46, 8, 0xFFFFD85A, true, 'left');
-  text(t.levelOf(st.level), 180, 20, 12.5, 0xFF63DDFF, true);
-  text(`${t.lives} ${'◆'.repeat(st.lives)}`, 180, 40, 12.5, 0xFFFFD85A, true);
+  const heading = st.mode === 'TIME_ATTACK' ? t.stage(st.level) : st.mode === 'SURVIVAL' ? t.wave(st.level)
+    : st.mode === 'DAILY' ? t.dailyStage(st.level, DAILY_STAGES) : t.levelOf(st.level);
+  text(heading, 180, 20, 12.5, 0xFF63DDFF, true);
+  if (st.mode === 'TIME_ATTACK') {
+    // Le temps clignote en rouge pendant les dix dernières secondes.
+    const urgent = st.timeLeft < 10 && Math.sin(motionClock() * 10) > 0;
+    text(t.timeLeft(Math.ceil(st.timeLeft)), 180, 40, 12.5, urgent ? 0xFFFF5268 : 0xFFFFD85A, true);
+  } else text(`${t.lives} ${'◆'.repeat(st.lives)}`, 180, 40, 12.5, 0xFFFFD85A, true);
+  if (st.mode === 'SURVIVAL' && st.screen === 'PLAYING') {
+    // Jauge de la prochaine descente du mur, juste au-dessus des cristaux.
+    const progress = 1 - clamp(st.advanceClock / st.advanceInterval, 0, 1);
+    ctx.fillStyle = argb(0x55253448); ctx.fillRect(LEFT, BRICK_TOP - 5, RIGHT - LEFT, 3);
+    ctx.fillStyle = argb(progress > 0.8 ? 0xFFFF5268 : 0xFFFF914D); ctx.fillRect(LEFT, BRICK_TOP - 5, (RIGHT - LEFT) * progress, 3);
+  }
   text('Ⅱ', 332, 34, 20, 0xFFA9BEDC, true);
   const e = activeEffects();
   if (e && app.deckHeight <= 0) text(e, 180, 64, 8, 0xFF9CEBFF, true);
@@ -1818,12 +2001,13 @@ function drawLevelIntro() {
   drawCrystal(126, 213, 18, accent, -motionClock() * 20);
   drawCrystal(180, 204, 25, accent, motionClock() * 16);
   drawCrystal(234, 213, 18, accent, motionClock() * 20);
-  const fresh = st.score === 0 && st.stats.levelsCompleted === 0;
-  text(fresh ? t.newGame : t.nextLevel, 180, 258, 10, 0xFF9CB2D3, true, 'center', true);
-  const label = t.stage(String(level).padStart(2, '0'));
+  const fresh = st.score === 0 && st.stats.levelsCompleted === 0, mode = st.mode;
+  text(fresh ? (mode === 'CLASSIC' ? t.newGame : t.mode[mode]) : t.nextLevel, 180, 258, 10, 0xFF9CB2D3, true, 'center', true);
+  const label = mode === 'SURVIVAL' ? t.wave(level) : mode === 'DAILY' ? t.dailyStage(level, DAILY_STAGES) : t.stage(String(level).padStart(2, '0'));
   text(label, 182, 306, 27, 0xFF07101C, true, 'center', true);
   text(label, 180, 303, 27, 0xFFEFFCFF, true, 'center', true);
-  text(t.levelProgress(level, LEVEL_COUNT), 180, 331, 11, accent, true, 'center', true);
+  const detail = mode === 'CLASSIC' ? t.levelProgress(level, LEVEL_COUNT) : mode === 'TIME_ATTACK' ? t.timeLeft(Math.ceil(st.timeLeft)) : t.modeHint[mode];
+  text(detail, 180, 331, mode === 'CLASSIC' || mode === 'TIME_ATTACK' ? 11 : 8.5, accent, true, 'center', true);
   text(t.getReady, 180, 365, 17, 0xFFFFD85A, true, 'center', true);
   const progress = clamp(st.stateTime / 1.8, 0, 1);
   roundRect(76, 389, 284, 395, 3, 0xFF253448);
@@ -1842,7 +2026,7 @@ function drawPauseMenu() {
   fillScreen(0xD9050916);
   roundRect(40, 116, 320, 574, 16, 0xF20B1422, 0xFF58DFFB, 1.2);
   text(t.pause, 180, 159, 27, 0xFFE8FAFF, true, 'center', true);
-  text(t.stageAndDifficulty(st.level, t.difficulty[st.difficulty.id]), 180, 184, 9, 0xFFFFD85A, true, 'center', true);
+  text(t.stageAndDifficulty(st.level, boardLabel(st.mode, st.difficulty)), 180, 184, 9, 0xFFFFD85A, true, 'center', true);
   menuButton(65, 215, 295, 260, t.resume, 0xFF42D8EC);
   menuButton(65, 280, 295, 325, t.restart, 0xFF829ABD);
   menuButton(65, 345, 295, 390, t.settings, 0xFFB18CFF);
@@ -1856,9 +2040,11 @@ function drawRunSummary(victory) {
   const t = app.t, s = st.stats;
   fillScreen(0xE9050916);
   roundRect(28, 157, 332, 491, 18, 0xF2102643, victory ? 0xFFFFD85A : 0xFF63DDFF, 1.3);
-  text(victory ? t.victory : t.gameOver, 180, 198, 22, 0xFF6DE6FF, true);
+  const title = victory ? (st.mode === 'DAILY' ? t.dailyDone : t.victory)
+    : st.mode === 'TIME_ATTACK' ? t.timeUp : st.mode === 'SURVIVAL' && st.lives > 0 ? t.wallFell : t.gameOver;
+  text(title, 180, 198, 22, 0xFF6DE6FF, true);
   text(`${t.score}  ${pad6(st.score)}`, 180, 237, 20, 0xFFFFD85A, true, 'center', true);
-  text(t.difficultyIs(t.difficulty[st.difficulty.id]), 180, 261, 9, 0xFFB5C8E2, true, 'center', true);
+  text(st.mode === 'CLASSIC' ? t.difficultyIs(t.difficulty[st.difficulty.id]) : t.modeIs(t.mode[st.mode]), 180, 261, 9, 0xFFB5C8E2, true, 'center', true);
   const rows = [[t.levelsCleared, s.levelsCompleted], [t.crystalsBroken, s.bricksDestroyed], [t.bonusesCollected, s.powerUpsCollected],
     [t.bestStreak, s.bestCombo], [t.laserAccuracy, s.laserShots === 0 ? '—' : `${laserPrecision(s)} %`]];
   rows.forEach(([label, value], i) => {
@@ -1877,7 +2063,7 @@ function drawHighScoreTable() {
   text('PRISM SMASH', 182, 106, 23, 0xFF300713, true, 'center', true);
   text('PRISM SMASH', 180, 104, 23, 0xFFE34C63, true, 'center', true);
   text('H E R O E S', 180, 132, 18, 0xFFFF7082, true, 'center', true);
-  text(t.top20Pilots(t.difficulty[app.leaderboardDifficulty.id]), 180, 153, 9, 0xFF8EA9D5, true, 'center', true);
+  text(t.top20Pilots(boardLabel(app.leaderboardMode, app.leaderboardDifficulty)), 180, 153, 9, 0xFF8EA9D5, true, 'center', true);
   const entries = sortScores(app.leaderboard.concat(app.pendingEntry ? [app.pendingEntry] : [])).slice(0, MAX_ENTRIES);
   for (let i = 0; i < MAX_ENTRIES; i++) {
     const e = entries[i], y = 178 + i * 19.4;
@@ -1929,7 +2115,25 @@ function drawInitialsEntry() {
 // --- accueil défilant
 
 function hasProgress() { return prefs.get('has_progress', false); }
-function titleLayout() { return new TitleLayout(hasProgress(), app.leaderboard.length, app.maxLevelReached > 1); }
+function titleLayout() {
+  const classic = app.selectedMode === 'CLASSIC';
+  return new TitleLayout(classic && hasProgress(), app.leaderboard.length, classic && app.maxLevelReached > 1, classic);
+}
+
+// Roue dentée des réglages, en haut à droite de l'accueil.
+function drawSettingsButton(box) {
+  const cx = box.centerX, cy = box.centerY;
+  circle(cx, cy, 20, 0xCC0E1C31);
+  ctx.beginPath(); ctx.arc(cx, cy, 20, 0, 7); ctx.lineWidth = 1; ctx.strokeStyle = argb(0xFF3B6A86); ctx.stroke();
+  ctx.fillStyle = argb(0xFFB5C8E2);
+  for (let k = 0; k < 8; k++) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(k * Math.PI / 4);
+    ctx.beginPath(); ctx.roundRect(-2.6, -12.5, 5.2, 5.5, 1.2); ctx.fill();
+    ctx.restore();
+  }
+  circle(cx, cy, 8.5, 0xFFB5C8E2);
+  circle(cx, cy, 3.6, 0xFF0E1C31);
+}
 
 function card(box, stroke) { roundRect(box.left, box.top, box.right, box.bottom, 16, 0xE60A1424, stroke); }
 function option(box, label, value, accent) {
@@ -1960,8 +2164,10 @@ function drawTitleScreen() {
     roundRect(sec.left, sec.top, sec.right, sec.bottom, 22, 0xFF0E1C31, 0xFF3B6A86);
     text(t.newGame, 180, sec.centerY + 4, 11.5, 0xFF9CEBFF, true);
   } else text(t.play, 180, p.centerY + 7, 20, 0xFFFFFFFF, true);
-  text(t.controlHint[app.controlMode], 180, layout.hintY, 9.5, 0xFFB5C8E2, false);
-  option(layout.difficulty, t.difficultyLabel, t.difficulty[app.selectedDifficulty.id], 0xFFB18CFF);
+  text(app.selectedMode === 'CLASSIC' ? t.controlHint[app.controlMode] : t.modeHint[app.selectedMode], 180, layout.hintY, 9.5, 0xFFB5C8E2, false);
+  drawSettingsButton(layout.settings);
+  option(layout.mode, t.modeLabel, t.mode[app.selectedMode], 0xFF65E572);
+  if (layout.difficulty) option(layout.difficulty, t.difficultyLabel, t.difficulty[app.selectedDifficulty.id], 0xFFB18CFF);
   if (layout.startLevel) option(layout.startLevel, t.startLevelLabel, `${app.startLevel} / ${app.maxLevelReached}`, 0xFFFFD85A);
   const musicOn = app.musicVolume > 0;
   option(layout.audio, t.audioLabel, musicOn ? t.musicVolume(app.musicVolume) : t.musicOff, 0xFF63DDFF);
@@ -2005,7 +2211,7 @@ function drawTitleScores(layout) {
   const t = app.t, box = layout.scoresCard;
   card(box, 0xFF5A4A1E);
   text(t.topPilots, box.left + 18, layout.scoresTitleY, 11, 0xFFFFD85A, true, 'left', true);
-  text(t.difficulty[app.leaderboardDifficulty.id], box.right - 18, layout.scoresTitleY, 9, 0xFF9C8A55, true, 'right', true);
+  text(boardLabel(app.leaderboardMode, app.leaderboardDifficulty), box.right - 18, layout.scoresTitleY, 9, 0xFF9C8A55, true, 'right', true);
   if (app.leaderboard.length === 0) { text(t.noScore, 180, layout.firstScoreY, 11, 0xFFD5E2F5, false); return; }
   app.leaderboard.forEach((e, i) => {
     const y = layout.firstScoreY + i * 24;
@@ -2067,7 +2273,7 @@ function drawSettingsScreen() {
   ctx.beginPath(); ctx.rect(-app.offsetX / s, 0, app.cw / s, viewport); ctx.clip();
   ctx.translate(0, -app.settingsPage.scroll);
   text(t.settings, 180, layout.titleY, 26, 0xFFE8FAFF, true, 'center', true);
-  text(t.settingsSubtitle, 180, layout.subtitleY, 9.5, 0xFF9CB2D3, false);
+  text(st.screen === 'TITLE' ? t.titleSettingsSubtitle : t.settingsSubtitle, 180, layout.subtitleY, 9.5, 0xFF9CB2D3, false);
   for (const sec of layout.sections) text(t.section[sec.id], 28, sec.titleY, 10, 0xFF7F98BD, true, 'left', true);
   text(shortMusicName(), WIDTH - 28, layout.sections[0].titleY, 8, 0xFF52657E, true, 'right', true);
   for (const row of layout.rows) drawSettingRow(row);
@@ -2116,13 +2322,14 @@ function drawDemoBadge() {
 // ---------------------------------------------------------------- logique d'écrans
 
 function activePage() {
+  if (app.settingsOpen && (st.screen === 'TITLE' || st.screen === 'PAUSED')) return app.settingsPage;
   if (st.screen === 'TITLE') return app.titlePage;
-  if (st.screen === 'PAUSED' && app.settingsOpen) return app.settingsPage;
   return null;
 }
+function openSettings() { app.settingsOpen = true; app.settingsPage.scroll = 0; }
 function pageMax(page) { return page === app.titlePage ? titleLayout().maxScroll(app.viewport) : app.settingsLayout.maxScroll(app.viewport); }
 
-function recordFor(d) { const e = HighScores.entries(d); return e.length ? e[0].score : 0; }
+function recordFor(d, mode = 'CLASSIC') { const e = HighScores.entries(d, mode); return e.length ? e[0].score : 0; }
 
 function saveCheckpoint() {
   if (app.demoMode) return;
@@ -2133,8 +2340,10 @@ function saveCheckpoint() {
 
 function beginNewGame() {
   app.settingsOpen = false;
-  engine.startNewGame(app.selectedDifficulty, app.startLevel);
-  st.highScore = recordFor(app.selectedDifficulty);
+  const mode = app.selectedMode;
+  engine.startNewGame(app.selectedDifficulty, mode === 'CLASSIC' ? app.startLevel : 1, mode,
+    mode === 'CLASSIC' ? 1987 : (Date.now() & 0x7fffffff), today());
+  st.highScore = recordFor(app.selectedDifficulty, mode);
   Music.start(app.musicVolume);
   app.tutorialStep = prefs.get('tutorial_done', false) ? 0 : 1; app.tutorialTimer = 0;
 }
@@ -2201,6 +2410,8 @@ function checkScreenChange() {
   const changed = st.screen !== app.lastScreen;
   app.lastScreen = st.screen;
   if (!changed) return;
+  // Seul le mode Classique garde un point de reprise et un tableau de départ.
+  if (st.mode !== 'CLASSIC') return;
   if (st.screen === 'INTRO') { saveCheckpoint(); rememberLevelReached(st.level); }
   if (st.screen === 'GAME_OVER' || st.screen === 'VICTORY') prefs.set('has_progress', false);
 }
@@ -2208,7 +2419,7 @@ function checkScreenChange() {
 function openHighScores() {
   if (st.screen !== 'GAME_OVER' && st.screen !== 'VICTORY') return;
   const finalScore = st.score, best = st.highScore;
-  showLeaderboard(st.difficulty);
+  showLeaderboard(st.difficulty, st.mode);
   st.highScore = Math.max(st.highScore, best);
   const candidate = HighScores.qualifies(app.leaderboard, finalScore) ? {name: '...', score: finalScore} : null;
   app.pendingEntry = candidate; app.recentEntry = candidate;
@@ -2228,7 +2439,7 @@ function saveInitials() {
   const e = app.initials;
   if (!e || !app.pendingEntry || !e.isValid) return;
   const score = app.pendingEntry.score;
-  app.leaderboard = HighScores.add(app.leaderboardDifficulty, e.name, score);
+  app.leaderboard = HighScores.add(app.leaderboardDifficulty, e.name, score, app.leaderboardMode);
   app.recentEntry = {name: e.name, score}; app.pendingEntry = null; app.initials = null;
   if (app.soundEnabled) Sound.play('POWER');
 }
@@ -2247,9 +2458,14 @@ function tapInitials(x, y) {
 
 function handleTitleTouch(x, y) {
   const l = titleLayout();
-  if (l.primary.contains(x, y)) { if (hasProgress()) continueSavedGame(); else beginNewGame(); }
+  if (l.settings.contains(x, y)) openSettings();
+  else if (l.primary.contains(x, y)) { if (l.secondary) continueSavedGame(); else beginNewGame(); }
   else if (l.secondary && l.secondary.contains(x, y)) beginNewGame();
-  else if (l.difficulty.contains(x, y)) {
+  else if (l.mode.contains(x, y)) {
+    app.selectedMode = MODES[(MODES.indexOf(app.selectedMode) + 1) % MODES.length];
+    prefs.set('game_mode', app.selectedMode);
+    showLeaderboard(app.selectedDifficulty);
+  } else if (l.difficulty && l.difficulty.contains(x, y)) {
     app.selectedDifficulty = DIFFICULTIES[(DIFFICULTIES.indexOf(app.selectedDifficulty) + 1) % 3];
     prefs.set('difficulty', app.selectedDifficulty.id);
     showLeaderboard(app.selectedDifficulty);
@@ -2269,7 +2485,7 @@ function handleAudioSetupTouch(x, y) {
     const start = app.audioSetupFirstRun;
     app.audioSetupVisible = false; app.audioSetupFirstRun = false; prefs.set('audio_setup_done', true);
     app.lastInteraction = performance.now();
-    if (start) { if (hasProgress()) continueSavedGame(); else beginNewGame(); }
+    if (start) { if (titleLayout().secondary) continueSavedGame(); else beginNewGame(); }
   }
 }
 
@@ -2278,7 +2494,7 @@ function handlePauseTouch(x, y) {
   y -= overlayShift();
   if (y >= 215 && y <= 260) st.screen = 'PLAYING';
   else if (y >= 280 && y <= 325) beginNewGame();
-  else if (y >= 345 && y <= 390) { app.settingsOpen = true; app.settingsPage.scroll = 0; }
+  else if (y >= 345 && y <= 390) openSettings();
   else if (y >= 410 && y <= 455) { app.tutorialStep = 0; app.zoneDirection = 0; st.screen = 'TITLE'; }
 }
 
@@ -2326,7 +2542,8 @@ document.getElementById('fichier-musique').addEventListener('change', e => {
 
 // Sauvegarde : un fichier JSON avec les réglages, les scores et la progression.
 function exportBackup() {
-  saveCheckpoint();
+  // Depuis la pause, la partie Classique en cours entre dans la sauvegarde ; depuis l'accueil, rien ne change.
+  if (st.screen === 'PAUSED' && st.mode === 'CLASSIC') saveCheckpoint();
   const values = prefs.all();
   const blob = new Blob([JSON.stringify({format: 'PRISM_SMASH_BACKUP_V1', values}, null, 1)], {type: 'application/json'});
   const a = document.createElement('a');
@@ -2530,7 +2747,7 @@ function externalAction() {
   if (app.demoMode) { stopDemo(); return; }
   if (app.audioSetupVisible && st.screen === 'TITLE') { handleAudioSetupTouch(180, 475); return; }
   switch (st.screen) {
-    case 'TITLE': if (hasProgress()) continueSavedGame(); else beginNewGame(); break;
+    case 'TITLE': if (app.settingsOpen) app.settingsOpen = false; else if (titleLayout().secondary) continueSavedGame(); else beginNewGame(); break;
     case 'GAME_OVER': case 'VICTORY': openHighScores(); break;
     case 'HIGH_SCORES': if (!app.pendingEntry) leaveHighScores(); break;
     case 'PAUSED': if (app.settingsOpen) app.settingsOpen = false; else st.screen = 'PLAYING'; break;
@@ -2540,7 +2757,7 @@ function externalAction() {
 function handleBack() {
   if (app.demoMode) { stopDemo(); return; }
   if (st.screen === 'TITLE' && app.audioSetupVisible) { app.audioSetupVisible = false; app.audioSetupFirstRun = false; prefs.set('audio_setup_done', true); return; }
-  if (st.screen === 'TITLE') return;
+  if (st.screen === 'TITLE') { app.settingsOpen = false; return; }
   if (st.screen === 'HIGH_SCORES' && app.initials) { skipInitials(); return; }
   switch (st.screen) {
     case 'PLAYING': engine.pause(); releaseControls(); break;
@@ -2603,7 +2820,7 @@ function frame(now) {
   const elapsed = app.lastFrame === 0 ? 0 : Math.min(MAX_FRAME_TIME, (now - app.lastFrame) / 1000);
   app.lastFrame = now;
   pollGamepads();
-  if (!app.demoMode && !app.audioSetupVisible && st.screen === 'TITLE' && now - app.lastInteraction >= 60000) startDemo();
+  if (!app.demoMode && !app.audioSetupVisible && !app.settingsOpen && st.screen === 'TITLE' && now - app.lastInteraction >= 60000) startDemo();
   app.clock += elapsed;
   app.shake = Math.max(0, app.shake - elapsed * 15);
   app.flash = Math.max(0, app.flash - elapsed * 1.8);
