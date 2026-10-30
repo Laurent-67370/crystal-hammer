@@ -142,6 +142,17 @@ class Box {
 
 // ------------------------------------------------------------------ textes (français et anglais)
 
+// Un lien partagé (?mode=defi…) ouvre l'accueil directement sur le mode joué par l'ami.
+function linkedMode() {
+  const key = new URLSearchParams(location.search).get('mode');
+  const found = {classique: 'CLASSIC', chrono: 'TIME_ATTACK', survie: 'SURVIVAL', defi: 'DAILY'}[key];
+  return found || null;
+}
+
+// Partage : milliers séparés, et une case pleine par tableau du défi terminé (comme LevelGenerator.DAILY_STAGES).
+const groupDigits = (n, sep) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+const dailyBoxes = n => { const c = Math.max(0, Math.min(3, n)); return '🟦'.repeat(c) + '⬛'.repeat(3 - c); };
+
 const TEXTS = {
   fr: {
     languageName: 'FRANÇAIS', difficulty: {AMIGA: 'ARCADE', NORMAL: 'NORMALE', EASY: 'FACILE'},
@@ -171,7 +182,15 @@ const TEXTS = {
     levelProgress: (l, n) => `NIVEAU ${l} / ${n}`, getReady: 'PRÉPARE-TOI', tapToStart: 'TOUCHEZ POUR COMMENCER',
     victory: 'PRISMES LIBÉRÉS !', gameOver: 'PARTIE TERMINÉE', difficultyIs: d => `DIFFICULTÉ ${d}`,
     levelsCleared: 'TABLEAUX TERMINÉS', crystalsBroken: 'CRISTAUX DÉTRUITS', bonusesCollected: 'BONUS RÉCUPÉRÉS',
-    bestStreak: 'MEILLEURE SÉRIE', laserAccuracy: 'PRÉCISION LASER', tapForScores: 'TOUCHEZ POUR LES HIGHSCORES',
+    bestStreak: 'MEILLEURE SÉRIE', laserAccuracy: 'PRÉCISION LASER', tapForScores: 'TOUCHEZ POUR LES HIGHSCORES', shareScore: 'PARTAGER MON SCORE',
+    shareCopied: 'Message copié : colle-le où tu veux',
+    shareMessage: (mode, score, detail, date, url) => {
+      const points = `${groupDigits(score, ' ')} points`;
+      if (mode === 'DAILY') return `Prism Smash · Défi du jour du ${date}\n${dailyBoxes(detail)} ${points}\nJoue au même défi : ${url}`;
+      if (mode === 'CLASSIC') return `Prism Smash · mode Classique\n${points}, tableau ${detail}/${LEVEL_COUNT}\nÀ toi de jouer : ${url}`;
+      if (mode === 'TIME_ATTACK') return `Prism Smash · mode Chrono\n${points}, ${detail} tableau${detail > 1 ? 'x' : ''} en temps limité\nÀ toi de jouer : ${url}`;
+      return `Prism Smash · mode Survie\n${points}, vague ${detail}\nÀ toi de jouer : ${url}`;
+    },
     top20Pilots: d => `LES 20 MEILLEURS PILOTES  •  ${d}`, scoreSaved: 'SCORE ENREGISTRÉ !', yourScore: s => `TON SCORE  ${s}`,
     tapToContinue: 'TOUCHEZ POUR CONTINUER', newHighScore: 'NOUVEAU RECORD !', scoreAndRank: (s, r) => `SCORE ${s}  •  RANG ${r}`,
     yourInitials: 'TES INITIALES', confirmName: n => `VALIDER  ${n}`, skip: 'PASSER', initialsHint: 'Glisse sur une lettre pour la faire défiler',
@@ -228,7 +247,15 @@ const TEXTS = {
     levelProgress: (l, n) => `LEVEL ${l} / ${n}`, getReady: 'GET READY', tapToStart: 'TAP TO START',
     victory: 'PRISMS FREED!', gameOver: 'GAME OVER', difficultyIs: d => `DIFFICULTY ${d}`,
     levelsCleared: 'STAGES CLEARED', crystalsBroken: 'CRYSTALS BROKEN', bonusesCollected: 'BONUSES COLLECTED',
-    bestStreak: 'BEST STREAK', laserAccuracy: 'LASER ACCURACY', tapForScores: 'TAP FOR HIGH SCORES',
+    bestStreak: 'BEST STREAK', laserAccuracy: 'LASER ACCURACY', tapForScores: 'TAP FOR HIGH SCORES', shareScore: 'SHARE MY SCORE',
+    shareCopied: 'Message copied: paste it anywhere',
+    shareMessage: (mode, score, detail, date, url) => {
+      const points = `${groupDigits(score, ',')} points`;
+      if (mode === 'DAILY') return `Prism Smash · Daily Challenge ${date}\n${dailyBoxes(detail)} ${points}\nPlay the same challenge: ${url}`;
+      if (mode === 'CLASSIC') return `Prism Smash · Classic mode\n${points}, stage ${detail}/${LEVEL_COUNT}\nYour turn: ${url}`;
+      if (mode === 'TIME_ATTACK') return `Prism Smash · Time Attack\n${points}, ${detail} stage${detail > 1 ? 's' : ''} against the clock\nYour turn: ${url}`;
+      return `Prism Smash · Survival\n${points}, wave ${detail}\nYour turn: ${url}`;
+    },
     top20Pilots: d => `TOP 20 PILOTS  •  ${d}`, scoreSaved: 'SCORE SAVED!', yourScore: s => `YOUR SCORE  ${s}`,
     tapToContinue: 'TAP TO CONTINUE', newHighScore: 'NEW HIGH SCORE!', scoreAndRank: (s, r) => `SCORE ${s}  •  RANK ${r}`,
     yourInitials: 'YOUR INITIALS', confirmName: n => `CONFIRM  ${n}`, skip: 'SKIP', initialsHint: 'Swipe on a letter to scroll through',
@@ -1474,7 +1501,7 @@ const app = {
   touchSensitivity: prefs.get('touch_sensitivity', 1), gamepadSensitivity: prefs.get('gamepad_sensitivity', 1),
   controlMode: CONTROL_MODES.includes(prefs.get('control_mode')) ? prefs.get('control_mode') : 'RELATIVE',
   selectedDifficulty: Difficulty[prefs.get('difficulty', 'NORMAL')] || Difficulty.NORMAL,
-  selectedMode: MODES.includes(prefs.get('game_mode')) ? prefs.get('game_mode') : 'CLASSIC', leaderboardMode: 'CLASSIC',
+  selectedMode: linkedMode() || (MODES.includes(prefs.get('game_mode')) ? prefs.get('game_mode') : 'CLASSIC'), leaderboardMode: 'CLASSIC',
   effectsVolume: prefs.get('effects_volume', 70), musicVolume: prefs.get('music_volume', 0), lastMusicVolume: prefs.get('last_music_volume', 35),
   audioSetupVisible: !prefs.get('audio_setup_done', false), audioSetupFirstRun: !prefs.get('audio_setup_done', false),
   visualEffects: prefs.get('visual_effects', true), highContrast: prefs.get('high_contrast', false),
@@ -2039,7 +2066,7 @@ function drawPauseMenu() {
 function drawRunSummary(victory) {
   const t = app.t, s = st.stats;
   fillScreen(0xE9050916);
-  roundRect(28, 157, 332, 491, 18, 0xF2102643, victory ? 0xFFFFD85A : 0xFF63DDFF, 1.3);
+  roundRect(28, 157, 332, 531, 18, 0xF2102643, victory ? 0xFFFFD85A : 0xFF63DDFF, 1.3);
   const title = victory ? (st.mode === 'DAILY' ? t.dailyDone : t.victory)
     : st.mode === 'TIME_ATTACK' ? t.timeUp : st.mode === 'SURVIVAL' && st.lives > 0 ? t.wallFell : t.gameOver;
   text(title, 180, 198, 22, 0xFF6DE6FF, true);
@@ -2051,7 +2078,24 @@ function drawRunSummary(victory) {
     text(label, 57, 298 + i * 31, 9, 0xFF9CB2D3, true, 'left', true);
     text(String(value), 303, 298 + i * 31, 12, 0xFFFFFFFF, true, 'right', true);
   });
-  if (Math.sin(motionClock() * 5) > -0.25) text(t.tapForScores, 180, 471, 9, 0xFF9CEBFF, true, 'center', true);
+  menuButton(SHARE_BUTTON.left, SHARE_BUTTON.top, SHARE_BUTTON.right, SHARE_BUTTON.bottom, t.shareScore, 0xFF65E572);
+  if (Math.sin(motionClock() * 5) > -0.25) text(t.tapForScores, 180, 513, 9, 0xFF9CEBFF, true, 'center', true);
+}
+
+// Partage du résultat : panneau de partage du système si le navigateur en a un, sinon copie du message.
+const SHARE_BUTTON = new Box(70, 452, 290, 492);
+const SHARE_MODES = {CLASSIC: 'classique', TIME_ATTACK: 'chrono', SURVIVAL: 'survie', DAILY: 'defi'};
+function shareRunResult() {
+  const detail = st.mode === 'TIME_ATTACK' ? st.stats.levelsCompleted
+    : st.mode === 'DAILY' ? (st.screen === 'VICTORY' ? DAILY_STAGES : st.stats.levelsCompleted) : st.level;
+  const seed = st.mode === 'DAILY' && st.dailySeed ? st.dailySeed : today();
+  const date = `${String(seed % 100).padStart(2, '0')}/${String(Math.floor(seed / 100) % 100).padStart(2, '0')}/${Math.floor(seed / 10000)}`;
+  const url = `${location.origin}${location.pathname}?mode=${SHARE_MODES[st.mode]}`;
+  const message = app.t.shareMessage(st.mode, st.score, detail, date, url);
+  if (navigator.share) { navigator.share({text: message}).catch(() => {}); return; }
+  const copied = () => toast(app.t.shareCopied);
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(message).then(copied, () => window.prompt('', message));
+  else window.prompt('', message);
 }
 
 function drawHighScoreTable() {
@@ -2604,7 +2648,7 @@ canvas.addEventListener('pointerdown', e => {
       if (app.initials) { app.initialsDrag = 0; }
       else if (!app.pendingEntry) leaveHighScores();
       break;
-    case 'GAME_OVER': case 'VICTORY': openHighScores(); break;
+    case 'GAME_OVER': case 'VICTORY': if (SHARE_BUTTON.contains(x, y - overlayShift())) shareRunResult(); else openHighScores(); break;
     case 'PAUSED': handlePauseTouch(x, y); break;
     case 'PLAYING':
       if (x > 305 && y < 52) { engine.pause(); releaseControls(); }
