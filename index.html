@@ -171,6 +171,57 @@ const Streak = {
   }
 };
 
+// Tableau de l'éditeur en texte court pour les liens (?tableau=) : même format que LevelCode.kt.
+// Une lettre par case, rangées séparées par « - » : . vide, x bloc, a-g un coup, A-G deux coups, 1-7 trois coups.
+const EDITOR_ROWS = 16;
+const LevelCode = {
+  symbol(b) {
+    if (b.hits <= 0) return '.';
+    if (b.solid) return 'x';
+    if (b.maxHits >= 3) return String(b.color);
+    return String.fromCharCode((b.maxHits === 2 ? 65 : 97) + b.color - 1);
+  },
+  brick(ch) {
+    if (ch === '.') return {color: 0, maxHits: 0, hits: 0, solid: false};
+    if (ch === 'x') return {color: 0, maxHits: 1, hits: 1, solid: true};
+    if (ch >= 'a' && ch <= 'g') return cell(ch.charCodeAt(0) - 96, 1);
+    if (ch >= 'A' && ch <= 'G') return cell(ch.charCodeAt(0) - 64, 2);
+    if (ch >= '1' && ch <= '7') return cell(+ch, 3);
+    return null;
+  },
+  empty() { return Array.from({length: ROWS * COLS}, emptyCell); },
+  encode(grid) {
+    const rows = [];
+    for (let r = 0; r < EDITOR_ROWS; r++) rows.push(grid.slice(r * COLS, (r + 1) * COLS).map(LevelCode.symbol).join('').replace(/\.+$/, ''));
+    return ('1' + rows.join('-')).replace(/-+$/, '');
+  },
+  decode(code) {
+    if (!code || code[0] !== '1' || code.length > 1 + EDITOR_ROWS * (COLS + 1)) return null;
+    const rows = code.slice(1).split('-');
+    if (rows.length > EDITOR_ROWS || rows.some(r => r.length > COLS)) return null;
+    const grid = LevelCode.empty();
+    for (let r = 0; r < rows.length; r++) for (let c = 0; c < rows[r].length; c++) {
+      const b = LevelCode.brick(rows[r][c]);
+      if (!b) return null;
+      grid[r * COLS + c] = b;
+    }
+    return grid;
+  },
+  playable(grid) { return grid.some(b => b.hits > 0 && !b.solid); }
+};
+
+// Succès (comme Achievements.kt) : vérifiés sur l'état de la partie et la série du défi, jamais en démonstration.
+const ACHIEVEMENTS = [
+  ['FIRST_STAGE', (s) => s.stats.levelsCompleted >= 1], ['PERFECT_STAGE', (s) => s.stats.perfectLevels >= 1],
+  ['COMBO_25', (s) => s.stats.bestCombo >= 25], ['SHARPSHOOTER', (s) => s.stats.laserHits >= 30],
+  ['COLLECTOR', (s) => POWERS.every((p, i) => p.id === 'DEATH' || (s.stats.powerKinds & (1 << i)))],
+  ['HUNTER', (s) => s.stats.enemiesDestroyed >= 10], ['BOSS', (s) => s.stats.bossesDefeated >= 1],
+  ['HALFWAY', (s) => s.mode === 'CLASSIC' && s.level >= 15], ['CHAMPION', (s) => s.mode === 'CLASSIC' && s.screen === 'VICTORY'],
+  ['SPRINTER', (s) => s.mode === 'TIME_ATTACK' && s.stats.levelsCompleted >= 5], ['SURVIVOR', (s) => s.mode === 'SURVIVAL' && s.level >= 3],
+  ['DAILY_DONE', (s) => s.mode === 'DAILY' && s.screen === 'VICTORY'], ['LOYAL', (s, streak) => streak >= 7],
+  ['BUILDER', (s) => s.mode === 'CUSTOM' && s.screen === 'VICTORY']
+];
+
 // Partage : milliers séparés, et une case pleine par tableau du défi terminé (comme LevelGenerator.DAILY_STAGES).
 const groupDigits = (n, sep) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, sep);
 const dailyBoxes = n => { const c = Math.max(0, Math.min(3, n)); return '🟦'.repeat(c) + '⬛'.repeat(3 - c); };
@@ -220,12 +271,27 @@ const TEXTS = {
     settings: 'RÉGLAGES', quitToTitle: "QUITTER VERS L'ACCUEIL", resumeNote: "Reprise au début du tableau en cas d'interruption.",
     gamepadSupported: 'MANETTE ET CLAVIER PRIS EN CHARGE', pauseKeys: 'ÉCHAP, START OU P = REPRENDRE',
     settingsSubtitle: 'Enregistrés automatiquement  •  partie en pause', titleSettingsSubtitle: 'Enregistrés automatiquement',
-    modeLabel: 'MODE DE JEU', mode: {CLASSIC: 'CLASSIQUE', TIME_ATTACK: 'CHRONO', SURVIVAL: 'SURVIE', DAILY: 'DÉFI DU JOUR'},
+    modeLabel: 'MODE DE JEU', mode: {CLASSIC: 'CLASSIQUE', TIME_ATTACK: 'CHRONO', SURVIVAL: 'SURVIE', DAILY: 'DÉFI DU JOUR', CUSTOM: 'MON TABLEAU'},
     modeHint: {CLASSIC: '', TIME_ATTACK: '90 s, +30 s par tableau, une balle perdue coûte 10 s',
-      SURVIVAL: 'Le mur descend de plus en plus vite : tiens bon', DAILY: '3 tableaux inédits, les mêmes pour tous, chaque jour'},
+      SURVIVAL: 'Le mur descend de plus en plus vite : tiens bon', DAILY: '3 tableaux inédits, les mêmes pour tous, chaque jour',
+      CUSTOM: "Le tableau dessiné dans l'éditeur"},
     modeIs: m => `MODE ${m}`, timeLeft: n => `TEMPS ${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`,
     wave: n => `VAGUE ${n}`, dailyStage: (n, c) => `DÉFI ${n}/${c}`, timeUp: 'TEMPS ÉCOULÉ', wallFell: 'LE MUR EST TOMBÉ',
     dailyDone: 'DÉFI RELEVÉ !',
+    achievementsTitle: 'SUCCÈS', achievementUnlocked: 'SUCCÈS DÉBLOQUÉ', bossWarning: 'UN BOSS GARDE CE TABLEAU',
+    achievement: {
+      FIRST_STAGE: ['Premier tableau', 'Terminer un tableau'], PERFECT_STAGE: ['Sans faute', 'Terminer un tableau sans perdre de balle'],
+      COMBO_25: ['Réaction en chaîne', "Briser 25 cristaux d'affilée"], SHARPSHOOTER: ["Tireur d'élite", 'Toucher 30 fois au laser dans une partie'],
+      COLLECTOR: ['Collectionneur', 'Attraper les 7 bonus dans une partie'], HUNTER: ['Chasseur', 'Abattre 10 ennemis dans une partie'],
+      BOSS: ['Tombeur de géant', 'Vaincre un boss'], HALFWAY: ['Mi-parcours', 'Atteindre le tableau 15 en Classique'],
+      CHAMPION: ['Champion', 'Terminer les 30 tableaux en Classique'], SPRINTER: ['Sprinteur', 'Terminer 5 tableaux au Chrono'],
+      SURVIVOR: ['Survivant', 'Atteindre la vague 3 en Survie'], DAILY_DONE: ['Défi relevé', "Réussir les 3 tableaux d'un Défi du jour"],
+      LOYAL: ['Fidèle', 'Une série de 7 jours au Défi du jour'], BUILDER: ['Architecte', "Terminer un tableau de l'éditeur"]
+    },
+    editorLabel: 'ÉDITEUR DE TABLEAUX', editorTitle: 'ÉDITEUR', editorHint: 'Choisis un cristal, puis touche ou glisse sur la grille',
+    editorPlay: 'JOUER', editorShare: 'PARTAGER', editorClear: 'EFFACER', editorBack: 'RETOUR', editorSolid: 'BLOC', editorEraser: 'GOMME',
+    editorEmpty: 'Place au moins un cristal destructible', customMode: 'MON TABLEAU',
+    shareLevel: url => `Mon tableau pour Prism Smash : à toi de le terminer !\n${url}`, levelLoaded: 'Tableau reçu : touche JOUER pour le lancer',
     streakLine: (c, b) => `SÉRIE : ${c} JOUR${c > 1 ? 'S' : ''}  •  RECORD ${b}`, streakShare: n => `🔥 ${n} jours d'affilée`,
     section: {SOUND: 'SON', CONTROLS: 'COMMANDES', DISPLAY: 'AFFICHAGE', BACKUP: 'SAUVEGARDE'},
     setting: {SOUND: 'EFFETS SONORES', EFFECTS_VOLUME: 'VOLUME DES EFFETS', MUSIC: 'MUSIQUE', MUSIC_VOLUME: 'VOLUME DE LA MUSIQUE',
@@ -286,12 +352,27 @@ const TEXTS = {
     settings: 'SETTINGS', quitToTitle: 'QUIT TO TITLE SCREEN', resumeNote: 'If interrupted, you resume at the start of the stage.',
     gamepadSupported: 'GAMEPAD AND KEYBOARD SUPPORTED', pauseKeys: 'ESC, START OR P = RESUME',
     settingsSubtitle: 'Saved automatically  •  game paused', titleSettingsSubtitle: 'Saved automatically',
-    modeLabel: 'GAME MODE', mode: {CLASSIC: 'CLASSIC', TIME_ATTACK: 'TIME ATTACK', SURVIVAL: 'SURVIVAL', DAILY: 'DAILY CHALLENGE'},
+    modeLabel: 'GAME MODE', mode: {CLASSIC: 'CLASSIC', TIME_ATTACK: 'TIME ATTACK', SURVIVAL: 'SURVIVAL', DAILY: 'DAILY CHALLENGE', CUSTOM: 'MY STAGE'},
     modeHint: {CLASSIC: '', TIME_ATTACK: '90 s, +30 s per stage, a lost ball costs 10 s',
-      SURVIVAL: 'The wall comes down faster and faster: hold on', DAILY: '3 new stages, the same for everyone, every day'},
+      SURVIVAL: 'The wall comes down faster and faster: hold on', DAILY: '3 new stages, the same for everyone, every day',
+      CUSTOM: 'The stage drawn in the editor'},
     modeIs: m => `MODE ${m}`, timeLeft: n => `TIME ${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`,
     wave: n => `WAVE ${n}`, dailyStage: (n, c) => `CHALLENGE ${n}/${c}`, timeUp: "TIME'S UP", wallFell: 'THE WALL CAME DOWN',
     dailyDone: 'CHALLENGE COMPLETE!',
+    achievementsTitle: 'ACHIEVEMENTS', achievementUnlocked: 'ACHIEVEMENT UNLOCKED', bossWarning: 'A BOSS GUARDS THIS STAGE',
+    achievement: {
+      FIRST_STAGE: ['First stage', 'Clear a stage'], PERFECT_STAGE: ['Flawless', 'Clear a stage without losing a ball'],
+      COMBO_25: ['Chain reaction', 'Break 25 crystals in a row'], SHARPSHOOTER: ['Sharpshooter', 'Land 30 laser hits in one game'],
+      COLLECTOR: ['Collector', 'Catch all 7 power-ups in one game'], HUNTER: ['Hunter', 'Destroy 10 enemies in one game'],
+      BOSS: ['Giant slayer', 'Defeat a boss'], HALFWAY: ['Halfway there', 'Reach stage 15 in Classic'],
+      CHAMPION: ['Champion', 'Clear all 30 stages in Classic'], SPRINTER: ['Sprinter', 'Clear 5 stages in Time Attack'],
+      SURVIVOR: ['Survivor', 'Reach wave 3 in Survival'], DAILY_DONE: ['Challenge met', 'Clear all 3 stages of a Daily Challenge'],
+      LOYAL: ['Loyal', 'A 7-day Daily Challenge streak'], BUILDER: ['Architect', 'Clear a stage made in the editor']
+    },
+    editorLabel: 'STAGE EDITOR', editorTitle: 'EDITOR', editorHint: 'Pick a crystal, then tap or drag on the grid',
+    editorPlay: 'PLAY', editorShare: 'SHARE', editorClear: 'CLEAR', editorBack: 'BACK', editorSolid: 'BLOCK', editorEraser: 'ERASER',
+    editorEmpty: 'Place at least one breakable crystal', customMode: 'MY STAGE',
+    shareLevel: url => `My stage for Prism Smash: can you clear it?\n${url}`, levelLoaded: 'Stage received: tap PLAY to start it',
     streakLine: (c, b) => `STREAK: ${c} DAY${c > 1 ? 'S' : ''}  •  BEST ${b}`, streakShare: n => `🔥 ${n} days in a row`,
     section: {SOUND: 'SOUND', CONTROLS: 'CONTROLS', DISPLAY: 'DISPLAY', BACKUP: 'BACKUP'},
     setting: {SOUND: 'SOUND EFFECTS', EFFECTS_VOLUME: 'EFFECTS VOLUME', MUSIC: 'MUSIC', MUSIC_VOLUME: 'MUSIC VOLUME',
@@ -476,13 +557,16 @@ function dailyLevel(seed, stage) {
   return grid;
 }
 
-const MODES = ['CLASSIC', 'TIME_ATTACK', 'SURVIVAL', 'DAILY'];
+const MODES = ['CLASSIC', 'TIME_ATTACK', 'SURVIVAL', 'DAILY']; // CUSTOM (tableau de l'éditeur) n'est pas dans la liste
+const BOSS_EVERY = 10, BOSS_BASE_HP = 10, BOSS_HP_STEP = 4, BOSS_SPEED = 60, BOSS_MAX_Y = 470, BOSS_RADIUS = 22;
+const BOSS_SHARD_INTERVAL = 3.5, SHARD_SPEED = 120, BOSS_HIT_POINTS = 150, BOSS_DEFEAT_POINTS = 5000;
 const TIME_ATTACK_START = 90, TIME_ATTACK_LEVEL_BONUS = 30, TIME_ATTACK_PENALTY = 10, TIME_ATTACK_LIFE_BONUS = 10;
 const SURVIVAL_FIRST_INTERVAL = 12, SURVIVAL_MIN_INTERVAL = 4, SURVIVAL_SPEEDUP = 0.97, SURVIVAL_ROWS_PER_WAVE = 10;
 const SURVIVAL_ROW_POINTS = 20, SURVIVAL_CLEAR_BONUS = 1500;
 
 function newStats() {
-  return {bricksDestroyed: 0, powerUpsCollected: 0, levelsCompleted: 0, laserShots: 0, laserHits: 0, currentCombo: 0, bestCombo: 0};
+  return {bricksDestroyed: 0, powerUpsCollected: 0, levelsCompleted: 0, laserShots: 0, laserHits: 0, currentCombo: 0, bestCombo: 0,
+    perfectLevels: 0, enemiesDestroyed: 0, powerKinds: 0, bossesDefeated: 0};
 }
 const laserPrecision = s => s.laserShots === 0 ? 0 : clamp(Math.floor(s.laserHits * 100 / s.laserShots), 0, 100);
 
@@ -491,6 +575,7 @@ class Engine {
     this.s = {
       screen: 'TITLE', score: 0, highScore: 0, lives: 3, level: 1, difficulty: Difficulty.NORMAL, stats: newStats(),
       mode: 'CLASSIC', timeLeft: 0, levelOrder: [], advanceClock: 0, advanceInterval: 0, rowsAdded: 0, dailySeed: 0,
+      customBricks: null, lostThisLevel: 0, boss: null, shards: [],
       nextExtraLife: 10000, paddleX: WIDTH / 2, paddleWidth: 66, wideTime: 0, stickyTime: 0, laserTime: 0,
       laserCooldown: 0, stateTime: 0, wormClock: 9, bricks: [], fireHeld: false, balls: [], powerUps: [],
       lasers: [], worms: [], particles: [], random: mulberry32(1987)
@@ -501,7 +586,7 @@ class Engine {
   }
 
   // Hors du mode Classique : difficulté Normale, premier tableau ; seed mélange le Chrono et le mur de la Survie.
-  startNewGame(difficulty, startLevel = 1, mode = 'CLASSIC', seed = 1987, daily = 0) {
+  startNewGame(difficulty, startLevel = 1, mode = 'CLASSIC', seed = 1987, daily = 0, custom = null) {
     const s = this.s;
     this.demonstration = false;
     s.mode = mode;
@@ -513,7 +598,7 @@ class Engine {
     const order = Array.from({length: LEVEL_COUNT}, (_, i) => i + 1), shuffle = mulberry32(seed ^ 0x5bd1e995);
     for (let i = order.length - 1; i > 0; i--) { const j = shuffle.nextInt(i + 1); [order[i], order[j]] = [order[j], order[i]]; }
     s.levelOrder = order;
-    s.advanceInterval = s.advanceClock = SURVIVAL_FIRST_INTERVAL; s.rowsAdded = 0; s.dailySeed = daily;
+    s.advanceInterval = s.advanceClock = SURVIVAL_FIRST_INTERVAL; s.rowsAdded = 0; s.dailySeed = daily; s.customBricks = custom;
     this.loadLevel();
   }
 
@@ -542,14 +627,17 @@ class Engine {
     s.bricks = s.mode === 'TIME_ATTACK' ? decodeLevel(s.levelOrder[(s.level - 1) % s.levelOrder.length])
       : s.mode === 'SURVIVAL' ? survivalStart(s.random)
       : s.mode === 'DAILY' ? dailyLevel(s.dailySeed, s.level)
+      : s.mode === 'CUSTOM' ? s.customBricks.map(b => Object.assign({}, b))
       : decodeLevel(s.level);
+    s.lostThisLevel = 0; s.shards = [];
+    s.boss = s.mode === 'CLASSIC' && s.level % BOSS_EVERY === 0 && !this.demonstration ? this.newBoss() : null;
     s.screen = 'INTRO'; s.stateTime = 0; s.wormClock = 8; s.paddleX = WIDTH / 2;
     this.resetVolley();
   }
 
   resetVolley() {
     const s = this.s;
-    s.balls = []; s.powerUps = []; s.lasers = []; s.worms = []; s.particles = [];
+    s.balls = []; s.powerUps = []; s.lasers = []; s.worms = []; s.particles = []; s.shards = [];
     s.wideTime = 0; s.stickyTime = 0; s.laserTime = 0; s.laserCooldown = 0; s.fireHeld = false;
     s.paddleWidth = 66; s.paddleX = WIDTH / 2;
     s.balls.push(this.ball(s.paddleX, PADDLE_Y - 5, 0, 0, true));
@@ -601,7 +689,7 @@ class Engine {
       s.stateTime += dt;
       this.updateParticles(dt);
       if (s.stateTime >= 1.8) {
-        const last = s.mode === 'CLASSIC' ? s.level >= LEVEL_COUNT : s.mode === 'DAILY' ? s.level >= DAILY_STAGES : false;
+        const last = s.mode === 'CLASSIC' ? s.level >= LEVEL_COUNT : s.mode === 'DAILY' ? s.level >= DAILY_STAGES : s.mode === 'CUSTOM';
         if (last) s.screen = 'VICTORY'; else { s.level++; this.loadLevel(); }
       }
       return;
@@ -632,6 +720,8 @@ class Engine {
     this.updateLasers(dt);
     this.updateWorms(dt);
     if (s.screen !== 'PLAYING') return;
+    this.updateBoss(dt);
+    if (s.screen !== 'PLAYING') return;
     this.updateParticles(dt);
     s.wormClock -= dt;
     if (s.wormClock <= 0) {
@@ -639,7 +729,7 @@ class Engine {
       if (s.worms.length < 2 && remaining >= 1 && remaining <= 260) this.spawnWorm();
       s.wormClock = 10 + s.random.nextFloat() * 8;
     }
-    if (this.remainingBricks() === 0) {
+    if (this.remainingBricks() === 0 && !s.boss) {
       // Survie : mur nettoyé, bonus, et trois rangées tombent aussitôt.
       if (s.mode === 'SURVIVAL') { this.addScore(SURVIVAL_CLEAR_BONUS); this.onEvent('LEVEL'); this.advanceWall(3); }
       else this.completeLevel();
@@ -707,6 +797,7 @@ class Engine {
       if (b.y - b.radius < TOP) { b.y = TOP + b.radius; b.vy = Math.abs(b.vy); }
       this.collidePaddle(b, oldY);
       this.collideWorms(b);
+      this.collideBoss(b);
       if (!b.stuck) {
         ballEnsure(b, 340 * s.difficulty.speedScale);
         const moved = hypot(b.x - oldX, b.y - oldY);
@@ -839,7 +930,7 @@ class Engine {
 
   applyPower(type) {
     const s = this.s;
-    if (type !== 'DEATH') s.stats.powerUpsCollected++;
+    if (type !== 'DEATH') { s.stats.powerUpsCollected++; s.stats.powerKinds |= 1 << POWERS.findIndex(p => p.id === type); }
     switch (type) {
       case 'WIDE': s.wideTime = 18; break;
       case 'SLOW': for (const b of s.balls) if (!b.stuck) {
@@ -893,11 +984,14 @@ class Engine {
           }
         }
       }
+      if (s.boss && hypot(l.x - s.boss.x, l.y - s.boss.y) < BOSS_RADIUS) {
+        s.lasers.splice(i, 1); s.stats.laserHits++; this.hitBoss(s.boss); continue;
+      }
       for (let w = s.worms.length - 1; w >= 0; w--) {
         const worm = s.worms[w];
         if (hypot(l.x - worm.x, l.y - worm.y) < 12) {
           s.worms.splice(w, 1); s.lasers.splice(i, 1); s.stats.laserHits++;
-          this.addScore(500); this.burst(worm.x, worm.y, enemyColor(worm), 12); this.onEvent('WORM');
+          this.addScore(500); s.stats.enemiesDestroyed++; this.burst(worm.x, worm.y, enemyColor(worm), 12); this.onEvent('WORM');
           continue laser;
         }
       }
@@ -924,7 +1018,7 @@ class Engine {
         // En mode Arcade, un ver sur le vaisseau coûte une vie ; ailleurs, le vaisseau l'écrase.
         if (s.difficulty === Difficulty.AMIGA) { this.loseLife(); return; }
         s.worms.splice(i, 1);
-        this.addScore(WORM_SQUASH_POINTS); this.burst(w.x, w.y, enemyColor(w), 12); this.onEvent('WORM');
+        this.addScore(WORM_SQUASH_POINTS); s.stats.enemiesDestroyed++; this.burst(w.x, w.y, enemyColor(w), 12); this.onEvent('WORM');
       }
     }
   }
@@ -936,15 +1030,71 @@ class Engine {
       if (hypot(b.x - w.x, b.y - w.y) < 11 + b.radius) {
         s.worms.splice(i, 1);
         b.vy = -b.vy; b.vx += Math.sin(w.age * 5) * 35; avoidHorizontalPath(b);
-        this.addScore(500); this.burst(w.x, w.y, enemyColor(w), 12); this.onEvent('WORM');
+        this.addScore(500); s.stats.enemiesDestroyed++; this.burst(w.x, w.y, enemyColor(w), 12); this.onEvent('WORM');
         return;
       }
     }
   }
 
+  // Boss des tableaux 10, 20 et 30 du Classique : sous le mur, plus solide à chaque dizaine (comme GameEngine.kt).
+  newBoss() {
+    const s = this.s;
+    let lowest = 0;
+    for (let r = ROWS - 1; r >= 0; r--) { if (s.bricks.slice(r * COLS, (r + 1) * COLS).some(b => b.hits > 0)) { lowest = r; break; } }
+    const y = Math.min(BRICK_TOP + (lowest + 1) * BRICK_HEIGHT + BOSS_RADIUS + 28, BOSS_MAX_Y);
+    const hp = BOSS_BASE_HP + Math.floor(s.level / BOSS_EVERY) * BOSS_HP_STEP;
+    return {x: WIDTH / 2, y, vx: BOSS_SPEED + s.level, maxHp: hp, hp, angle: 0, hitFlash: 0, shardClock: 3};
+  }
+
+  updateBoss(dt) {
+    const s = this.s, boss = s.boss;
+    if (!boss) return;
+    boss.angle += dt; boss.hitFlash = Math.max(0, boss.hitFlash - dt * 4);
+    boss.x += boss.vx * dt;
+    if (boss.x < LEFT + BOSS_RADIUS + 6) { boss.x = LEFT + BOSS_RADIUS + 6; boss.vx = Math.abs(boss.vx); }
+    else if (boss.x > RIGHT - BOSS_RADIUS - 6) { boss.x = RIGHT - BOSS_RADIUS - 6; boss.vx = -Math.abs(boss.vx); }
+    if (s.difficulty !== Difficulty.EASY) { // en Facile, le boss ne tire pas
+      boss.shardClock -= dt;
+      if (boss.shardClock <= 0) { s.shards.push({x: boss.x, y: boss.y + BOSS_RADIUS}); boss.shardClock = BOSS_SHARD_INTERVAL; }
+    }
+    for (let i = s.shards.length - 1; i >= 0; i--) {
+      const sh = s.shards[i];
+      sh.y += SHARD_SPEED * dt;
+      if (sh.y > HEIGHT + 10) s.shards.splice(i, 1);
+      else if (sh.y + 5 >= PADDLE_Y && sh.y - 5 <= PADDLE_Y + PADDLE_HEIGHT && Math.abs(sh.x - s.paddleX) < s.paddleWidth / 2 + 4) {
+        s.shards.splice(i, 1); this.loseLife(); return;
+      }
+    }
+  }
+
+  // La balle rebondit sur le boss comme sur un cercle, et lui retire un point de vie.
+  collideBoss(b) {
+    const boss = this.s.boss;
+    if (!boss) return;
+    const dx = b.x - boss.x, dy = b.y - boss.y, d = hypot(dx, dy), reach = BOSS_RADIUS + b.radius;
+    if (d >= reach || d < 0.001) return;
+    const nx = dx / d, ny = dy / d, along = b.vx * nx + b.vy * ny;
+    if (along < 0) { b.vx -= 2 * along * nx; b.vy -= 2 * along * ny; }
+    b.x = boss.x + nx * (reach + 0.02); b.y = boss.y + ny * (reach + 0.02);
+    avoidHorizontalPath(b);
+    this.hitBoss(boss);
+  }
+
+  hitBoss(boss) {
+    const s = this.s;
+    boss.hp--; boss.hitFlash = 1;
+    this.addScore(BOSS_HIT_POINTS); this.burst(boss.x, boss.y, 0xFFB18CFF, 4);
+    if (boss.hp > 0) { this.onEvent('HARD_BRICK'); return; }
+    s.boss = null; s.shards = []; s.stats.bossesDefeated++;
+    this.addScore(BOSS_DEFEAT_POINTS);
+    this.burst(boss.x, boss.y, 0xFFB18CFF, 30); this.burst(boss.x, boss.y, 0xFFFFFFFF, 14);
+    this.onEvent('LEVEL');
+  }
+
   loseLife() {
     const s = this.s;
     if (s.screen !== 'PLAYING') return;
+    s.lostThisLevel++;
     if (s.mode === 'TIME_ATTACK') {
       // Chrono : pas de vies, chaque balle perdue coûte du temps.
       s.stats.currentCombo = 0;
@@ -964,6 +1114,7 @@ class Engine {
     if (s.mode === 'TIME_ATTACK') { this.addScore(1000 + Math.floor(s.timeLeft) * 10); s.timeLeft += TIME_ATTACK_LEVEL_BONUS; }
     else this.addScore(1000 + s.lives * 100);
     s.stats.levelsCompleted++;
+    if (s.lostThisLevel === 0) s.stats.perfectLevels++;
     s.screen = 'LEVEL_CLEAR'; s.stateTime = 0; s.powerUps = []; s.lasers = []; s.worms = [];
     this.onEvent('LEVEL');
   }
@@ -1438,8 +1589,11 @@ class TitleLayout {
     if (hasDifficulty) { this.difficulty = new Box(M, y, W - M, y + 48); y = this.difficulty.bottom + 12; }
     this.startLevel = null;
     if (hasStartChoice) { this.startLevel = new Box(M, y, W - M, y + 48); y = this.startLevel.bottom + 12; }
-    this.audio = new Box(M, y, W - M, y + 48); y = this.audio.bottom + 28;
+    this.audio = new Box(M, y, W - M, y + 48); y = this.audio.bottom + 12;
+    this.editor = new Box(M, y, W - M, y + 48); y = this.editor.bottom + 28; // éditeur de tableaux
     this.bonusCard = new Box(M, y, W - M, y + 132); y = this.bonusCard.bottom + 28;
+    this.firstAchievementY = y + 62;
+    this.achievementsCard = new Box(M, y, W - M, this.firstAchievementY + (ACHIEVEMENTS.length - 1) * 30 + 22); y = this.achievementsCard.bottom + 28;
     const rows = clamp(scoreRows, 1, MAX_ENTRIES);
     this.scoresTitleY = y + 30; this.firstScoreY = y + 64;
     this.scoresCard = new Box(M, y, W - M, this.firstScoreY + (rows - 1) * 24 + 24);
@@ -1525,6 +1679,9 @@ const app = {
   touchSensitivity: prefs.get('touch_sensitivity', 1), gamepadSensitivity: prefs.get('gamepad_sensitivity', 1),
   controlMode: CONTROL_MODES.includes(prefs.get('control_mode')) ? prefs.get('control_mode') : 'RELATIVE',
   selectedDifficulty: Difficulty[prefs.get('difficulty', 'NORMAL')] || Difficulty.NORMAL,
+  achievements: new Set((prefs.get('achievements', '') || '').split(',').filter(Boolean)), achievementQueue: [], banner: null, bannerTime: 0,
+  editorOpen: false, editorGrid: LevelCode.decode(prefs.get('custom_level', '')) || LevelCode.empty(), editorColor: 1, editorHits: 1,
+  editorPainting: false, editorMessage: '', editorMessageTime: 0,
   selectedMode: linkedMode() || (MODES.includes(prefs.get('game_mode')) ? prefs.get('game_mode') : 'CLASSIC'), leaderboardMode: 'CLASSIC',
   effectsVolume: prefs.get('effects_volume', 70), musicVolume: prefs.get('music_volume', 0), lastMusicVolume: prefs.get('last_music_volume', 35),
   audioSetupVisible: !prefs.get('audio_setup_done', false), audioSetupFirstRun: !prefs.get('audio_setup_done', false),
@@ -1881,8 +2038,12 @@ function drawPowerUp(p) {
 // une dizaine de polygones par forme, recalculés à chaque image sans coût visible.
 const LIGHT = (() => { const l = [-0.45, -0.65, 0.62], n = Math.hypot(...l); return l.map(c => c / n); })();
 function drawShape(w) {
-  const shape = SHAPES[w.kind], size = 9.5, t = app.reducedMotion ? 0.6 : w.age;
-  const ax = t * w.spinX + w.phase, ay = t * w.spinY, az = t * w.spinZ;
+  const t = app.reducedMotion ? 0.6 : w.age;
+  drawSolid(w.x, w.y, 9.5, SHAPES[w.kind].color, SHAPES[w.kind], t * w.spinX + w.phase, t * w.spinY, t * w.spinZ);
+}
+
+// Polyèdre en rotation centré en (ox, oy) : ennemis 3D et boss.
+function drawSolid(ox, oy, size, baseColor, shape, ax, ay, az) {
   const [sx, cx] = [Math.sin(ax), Math.cos(ax)], [sy, cy] = [Math.sin(ay), Math.cos(ay)], [sz, cz] = [Math.sin(az), Math.cos(az)];
   const rotate = ([x, y, z]) => {
     let y1 = y * cx - z * sx, z1 = y * sx + z * cx;
@@ -1890,9 +2051,9 @@ function drawShape(w) {
     return [x2 * cz - y1 * sz, x2 * sz + y1 * cz, z2];
   };
   const points = shape.vertices.map(rotate);
-  const project = ([x, y, z]) => { const p = 3.2 / (3.2 - z); return [w.x + x * size * p, w.y + y * size * p]; };
+  const project = ([x, y, z]) => { const p = 3.2 / (3.2 - z); return [ox + x * size * p, oy + y * size * p]; };
   // Ombre douce sous la forme, pour la détacher du décor.
-  ctx.fillStyle = argb(0x44000000); ctx.beginPath(); ctx.ellipse(w.x + 2, w.y + 3, size * 0.95, size * 0.8, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = argb(0x44000000); ctx.beginPath(); ctx.ellipse(ox + 2, oy + 3, size * 0.95, size * 0.8, 0, 0, 7); ctx.fill();
   ctx.lineJoin = 'round';
   for (const face of shape.faces) {
     const [a, b, c] = face.map(i => points[i]);
@@ -1902,13 +2063,159 @@ function drawShape(w) {
     // L'observateur est du côté des z positifs : seules les faces tournées vers lui sont dessinées.
     if (n[2] / len <= 0) continue;
     const light = Math.max(0, (n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]) / len);
-    const color = light < 0.5 ? darken(shape.color, 0.42 + light * 1.16) : lighten(shape.color, (light - 0.5) * 0.8);
+    const color = light < 0.5 ? darken(baseColor, 0.42 + light * 1.16) : lighten(baseColor, (light - 0.5) * 0.8);
     ctx.beginPath();
     face.forEach((i, k) => { const [px, py] = project(points[i]); k ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
     ctx.closePath();
     ctx.fillStyle = argb(color); ctx.fill();
     ctx.lineWidth = 0.6; ctx.strokeStyle = argb(0xCC07101C); ctx.stroke();
   }
+}
+
+// ---------------------------------------------------------------- boss, succès et éditeur
+
+function drawBoss(boss) {
+  const t = app.reducedMotion ? 0.6 : boss.angle;
+  const halo = ctx.createRadialGradient(boss.x, boss.y, 0, boss.x, boss.y, BOSS_RADIUS * 2);
+  halo.addColorStop(0, argb(0x55B18CFF)); halo.addColorStop(1, argb(0x00B18CFF));
+  circle(boss.x, boss.y, BOSS_RADIUS * 2, halo);
+  drawSolid(boss.x, boss.y, BOSS_RADIUS, lighten(0xFFB18CFF, boss.hitFlash * 0.7), SHAPES.octa, t * 0.9, t * 1.4, t * 0.3);
+  const w = 54, top = boss.y - BOSS_RADIUS - 12;
+  roundRect(boss.x - w / 2 - 1, top - 1, boss.x + w / 2 + 1, top + 5, 3, 0xCC07101C);
+  if (boss.hp > 0) roundRect(boss.x - w / 2, top, boss.x - w / 2 + w * boss.hp / boss.maxHp, top + 4, 2, 0xFFFF5268);
+}
+
+function drawShard(sh) {
+  ctx.beginPath(); ctx.moveTo(sh.x, sh.y - 6); ctx.lineTo(sh.x + 3.5, sh.y); ctx.lineTo(sh.x, sh.y + 6); ctx.lineTo(sh.x - 3.5, sh.y); ctx.closePath();
+  ctx.fillStyle = argb(0xFFE7DCFF); ctx.fill(); ctx.lineWidth = 0.8; ctx.strokeStyle = argb(0xFF7A4FE0); ctx.stroke();
+}
+
+const BANNER_TIME = 3.2;
+function checkAchievements(elapsed) {
+  app.bannerTime = Math.max(0, app.bannerTime - elapsed);
+  if (app.bannerTime === 0) { app.banner = app.achievementQueue.shift() || null; if (app.banner) app.bannerTime = BANNER_TIME; }
+  if (app.demoMode || st.screen === 'TITLE' || st.screen === 'HIGH_SCORES') return;
+  const streak = Streak.get().current;
+  const fresh = ACHIEVEMENTS.filter(([id, check]) => !app.achievements.has(id) && check(st, streak)).map(([id]) => id);
+  if (!fresh.length) return;
+  fresh.forEach(id => app.achievements.add(id));
+  app.achievementQueue.push(...fresh);
+  prefs.set('achievements', ACHIEVEMENTS.map(([id]) => id).filter(id => app.achievements.has(id)).join(','));
+  if (app.soundEnabled) Sound.play('EXTRA_LIFE');
+}
+
+function drawAchievementBanner() {
+  if (!app.banner) return;
+  const appear = Math.min(1, (BANNER_TIME - app.bannerTime) * 4) * Math.min(1, app.bannerTime * 4), top = 62 - (1 - appear) * 30;
+  ctx.save(); ctx.globalAlpha = appear;
+  roundRect(40, top, 320, top + 44, 12, 0xF0102643, 0xFFFFD85A, 1.2);
+  text(`★  ${app.t.achievementUnlocked}`, 180, top + 17, 8.5, 0xFFFFD85A, true, 'center', true);
+  text(app.t.achievement[app.banner][0], 180, top + 35, 12, 0xFFFFFFFF, true);
+  ctx.restore();
+}
+
+function drawAchievements(layout) {
+  const card = layout.achievementsCard, t = app.t;
+  roundRect(card.left, card.top, card.right, card.bottom, 16, 0xE60A1424, 0xFF5A4A1E);
+  text(t.achievementsTitle, card.left + 18, card.top + 30, 11, 0xFFFFD85A, true, 'left', true);
+  text(`${app.achievements.size} / ${ACHIEVEMENTS.length}`, card.right - 18, card.top + 30, 9, 0xFF9C8A55, true, 'right', true);
+  ACHIEVEMENTS.forEach(([id], i) => {
+    const y = layout.firstAchievementY + i * 30, done = app.achievements.has(id);
+    text('★', card.left + 24, y + 4, 14, done ? 0xFFFFD85A : 0xFF33445A, true);
+    text(t.achievement[id][0], card.left + 44, y, 10.5, done ? 0xFFFFFFFF : 0xFF9CB2D3, true, 'left');
+    text(t.achievement[id][1], card.left + 44, y + 12, 8, 0xFF7F98BD, false, 'left');
+  });
+}
+
+// Éditeur : grille 20 × 16, outil = couleur 1 à 7, 0 gomme, -1 bloc ; nombre de coups 1 à 3.
+const EDITOR_GRID_BOTTOM = BRICK_TOP + EDITOR_ROWS * BRICK_HEIGHT, PALETTE_TOP = EDITOR_GRID_BOTTOM + 18, PALETTE_SIZE = 34;
+const HITS_TOP = PALETTE_TOP + PALETTE_SIZE + 12;
+const EDITOR_PLAY = new Box(40, 500, 176, 542), EDITOR_SHARE = new Box(184, 500, 320, 542);
+const EDITOR_CLEAR = new Box(40, 552, 176, 594), EDITOR_BACK = new Box(184, 552, 320, 594);
+const paletteBox = i => { const gap = (RIGHT - LEFT - 9 * PALETTE_SIZE) / 8, l = LEFT + i * (PALETTE_SIZE + gap); return new Box(l, PALETTE_TOP, l + PALETTE_SIZE, PALETTE_TOP + PALETTE_SIZE); };
+const paletteColor = i => i === 7 ? -1 : i === 8 ? 0 : i + 1;
+const hitsBox = h => { const l = 180 - 90 + (h - 1) * 62; return new Box(l, HITS_TOP, l + 54, HITS_TOP + 30); };
+
+// Cristal de l'éditeur : le sprite du jeu, avec le nombre de coups quand il en faut plus d'un.
+function drawEditorBrick(x, y, w, h, b) {
+  ctx.drawImage(brickSprite(b), x, y, w, h);
+  if (!b.solid && b.maxHits > 1) text(String(b.maxHits), x + w / 2, y + h / 2 + 3.5, 9, 0xFF07101C, true, 'center', true);
+}
+
+function openEditor() { app.editorOpen = true; app.editorMessage = ''; app.editorMessageTime = 0; }
+function closeEditor() { saveEditorLevel(); app.editorOpen = false; }
+function saveEditorLevel() { prefs.set('custom_level', LevelCode.encode(app.editorGrid)); }
+function editorBrick() {
+  if (app.editorColor === 0) return emptyCell();
+  if (app.editorColor === -1) return {color: 0, maxHits: 1, hits: 1, solid: true};
+  return cell(app.editorColor, app.editorHits);
+}
+function editorCell(x, y) {
+  if (x < LEFT || x >= RIGHT || y < BRICK_TOP || y >= EDITOR_GRID_BOTTOM) return -1;
+  return clamp(Math.floor((y - BRICK_TOP) / BRICK_HEIGHT), 0, EDITOR_ROWS - 1) * COLS + clamp(Math.floor((x - LEFT) / BRICK_WIDTH), 0, COLS - 1);
+}
+function paintEditorCell(x, y) { const i = editorCell(x, y); if (i >= 0) app.editorGrid[i] = editorBrick(); }
+function editorReady(grid = app.editorGrid) {
+  if (LevelCode.playable(grid)) return true;
+  app.editorMessage = app.t.editorEmpty; app.editorMessageTime = 2.5;
+  return false;
+}
+function editorDown(x, y) {
+  if (editorCell(x, y) >= 0) { app.editorPainting = true; paintEditorCell(x, y); return; }
+  for (let i = 0; i < 9; i++) if (paletteBox(i).contains(x, y)) app.editorColor = paletteColor(i);
+  for (let h = 1; h <= 3; h++) if (hitsBox(h).contains(x, y)) app.editorHits = h;
+  if (EDITOR_PLAY.contains(x, y)) playEditorLevel();
+  else if (EDITOR_SHARE.contains(x, y)) shareEditorLevel();
+  else if (EDITOR_CLEAR.contains(x, y)) app.editorGrid = LevelCode.empty();
+  else if (EDITOR_BACK.contains(x, y)) closeEditor();
+}
+function playEditorLevel() {
+  if (!editorReady()) return;
+  saveEditorLevel(); app.editorOpen = false;
+  engine.startNewGame(Difficulty.NORMAL, 1, 'CUSTOM', 1987, 0, app.editorGrid.map(b => Object.assign({}, b)));
+  st.highScore = 0;
+  Music.start(app.musicVolume);
+}
+function shareEditorLevel() {
+  const grid = st.mode === 'CUSTOM' && !app.editorOpen && st.customBricks ? st.customBricks : app.editorGrid;
+  if (!editorReady(grid)) return;
+  saveEditorLevel();
+  const message = app.t.shareLevel(`${location.origin}${location.pathname}?tableau=${LevelCode.encode(grid)}`);
+  if (navigator.share) { navigator.share({text: message}).catch(() => {}); return; }
+  const copied = () => toast(app.t.shareCopied);
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(message).then(copied, () => window.prompt('', message));
+  else window.prompt('', message);
+}
+
+function drawEditor() {
+  const t = app.t;
+  ctx.fillStyle = argb(0xE6050A16); ctx.fillRect(-app.offsetX / app.viewScale, -app.offsetY / app.viewScale, app.cw / app.viewScale, app.ch / app.viewScale);
+  text(t.editorTitle, 180, 40, 24, 0xFFE8FAFF, true, 'center', true);
+  text(t.editorHint, 180, 74, 9, 0xFF9CB2D3, false);
+  ctx.fillStyle = argb(0xCC0A1424); ctx.fillRect(LEFT, BRICK_TOP, RIGHT - LEFT, EDITOR_GRID_BOTTOM - BRICK_TOP);
+  ctx.lineWidth = 0.5; ctx.strokeStyle = argb(0x332E4A66); ctx.beginPath();
+  for (let c = 0; c <= COLS; c++) { const x = LEFT + c * BRICK_WIDTH; ctx.moveTo(x, BRICK_TOP); ctx.lineTo(x, EDITOR_GRID_BOTTOM); }
+  for (let r = 0; r <= EDITOR_ROWS; r++) { const y = BRICK_TOP + r * BRICK_HEIGHT; ctx.moveTo(LEFT, y); ctx.lineTo(RIGHT, y); }
+  ctx.stroke();
+  ctx.lineWidth = 1; ctx.strokeStyle = argb(0xFF3B6A86); ctx.strokeRect(LEFT, BRICK_TOP, RIGHT - LEFT, EDITOR_GRID_BOTTOM - BRICK_TOP);
+  for (let i = 0; i < EDITOR_ROWS * COLS; i++) {
+    const b = app.editorGrid[i];
+    if (b.hits > 0) drawEditorBrick(brickLeft(i), brickTop(i), BRICK_WIDTH, BRICK_HEIGHT, b);
+  }
+  for (let i = 0; i < 9; i++) {
+    const box = paletteBox(i), tool = paletteColor(i);
+    roundRect(box.left, box.top, box.right, box.bottom, 8, 0xFF14243A, tool === app.editorColor ? 0xFFFFD85A : null, 2);
+    if (tool === 0) text('⌫', box.centerX, box.centerY + 5, 15, 0xFFFF7180, true);
+    else drawEditorBrick(box.left + 5, box.centerY - 7, PALETTE_SIZE - 10, 14, tool === -1 ? {color: 0, maxHits: 1, hits: 1, solid: true} : cell(tool, app.editorHits));
+  }
+  const toolName = app.editorColor === 0 ? t.editorEraser : app.editorColor === -1 ? t.editorSolid : '';
+  if (toolName) text(toolName, 180, HITS_TOP - 2, 8, 0xFF9CB2D3, true, 'center', true);
+  for (let h = 1; h <= 3; h++) { const b = hitsBox(h); menuButton(b.left, b.top, b.right, b.bottom, `×${h}`, h === app.editorHits ? 0xFFFFD85A : 0xFF52657E); }
+  if (app.editorMessageTime > 0) text(app.editorMessage, 180, 486, 9.5, 0xFFFF7180, true);
+  menuButton(EDITOR_PLAY.left, EDITOR_PLAY.top, EDITOR_PLAY.right, EDITOR_PLAY.bottom, t.editorPlay, 0xFF65E572);
+  menuButton(EDITOR_SHARE.left, EDITOR_SHARE.top, EDITOR_SHARE.right, EDITOR_SHARE.bottom, t.editorShare, 0xFF63DDFF);
+  menuButton(EDITOR_CLEAR.left, EDITOR_CLEAR.top, EDITOR_CLEAR.right, EDITOR_CLEAR.bottom, t.editorClear, 0xFFFF7180);
+  menuButton(EDITOR_BACK.left, EDITOR_BACK.top, EDITOR_BACK.right, EDITOR_BACK.bottom, t.editorBack, 0xFF829ABD);
 }
 
 function drawEnemy(w) { if (w.kind === 'worm') drawWorm(w); else drawShape(w); }
@@ -1945,7 +2252,7 @@ function drawHud() {
   text(pad6(st.score), 14, 33, 18, 0xFFFFFFFF, true, 'left');
   text(t.best(pad6(st.highScore)), 14, 46, 8, 0xFFFFD85A, true, 'left');
   const heading = st.mode === 'TIME_ATTACK' ? t.stage(st.level) : st.mode === 'SURVIVAL' ? t.wave(st.level)
-    : st.mode === 'DAILY' ? t.dailyStage(st.level, DAILY_STAGES) : t.levelOf(st.level);
+    : st.mode === 'DAILY' ? t.dailyStage(st.level, DAILY_STAGES) : st.mode === 'CUSTOM' ? t.mode.CUSTOM : t.levelOf(st.level);
   text(heading, 180, 20, 12.5, 0xFF63DDFF, true);
   if (st.mode === 'TIME_ATTACK') {
     // Le temps clignote en rouge pendant les dix dernières secondes.
@@ -1996,6 +2303,8 @@ function drawGame() {
   drawHud();
   drawBricks();
   st.worms.forEach(drawEnemy);
+  if (st.boss) drawBoss(st.boss);
+  st.shards.forEach(drawShard);
   st.powerUps.forEach(drawPowerUp);
   for (const l of st.lasers) {
     roundRect(l.x - 1.3, l.y - 7, l.x + 1.3, l.y + 5, 1, 0xFFFF4E67);
@@ -2057,7 +2366,7 @@ function drawLevelIntro() {
   const label = mode === 'SURVIVAL' ? t.wave(level) : mode === 'DAILY' ? t.dailyStage(level, DAILY_STAGES) : t.stage(String(level).padStart(2, '0'));
   text(label, 182, 306, 27, 0xFF07101C, true, 'center', true);
   text(label, 180, 303, 27, 0xFFEFFCFF, true, 'center', true);
-  const detail = mode === 'CLASSIC' ? t.levelProgress(level, LEVEL_COUNT) : mode === 'TIME_ATTACK' ? t.timeLeft(Math.ceil(st.timeLeft)) : t.modeHint[mode];
+  const detail = mode === 'CLASSIC' ? (st.boss ? t.bossWarning : t.levelProgress(level, LEVEL_COUNT)) : mode === 'TIME_ATTACK' ? t.timeLeft(Math.ceil(st.timeLeft)) : t.modeHint[mode];
   text(detail, 180, 331, mode === 'CLASSIC' || mode === 'TIME_ATTACK' ? 11 : 8.5, accent, true, 'center', true);
   text(t.getReady, 180, 365, 17, 0xFFFFD85A, true, 'center', true);
   const progress = clamp(st.stateTime / 1.8, 0, 1);
@@ -2112,6 +2421,7 @@ function drawRunSummary(victory) {
 const SHARE_BUTTON = new Box(70, 452, 290, 492);
 const SHARE_MODES = {CLASSIC: 'classique', TIME_ATTACK: 'chrono', SURVIVAL: 'survie', DAILY: 'defi'};
 function shareRunResult() {
+  if (st.mode === 'CUSTOM') { shareEditorLevel(); return; }
   const detail = st.mode === 'TIME_ATTACK' ? st.stats.levelsCompleted
     : st.mode === 'DAILY' ? (st.screen === 'VICTORY' ? DAILY_STAGES : st.stats.levelsCompleted) : st.level;
   const seed = st.mode === 'DAILY' && st.dailySeed ? st.dailySeed : today();
@@ -2248,7 +2558,9 @@ function drawTitleScreen() {
   if (layout.startLevel) option(layout.startLevel, t.startLevelLabel, `${app.startLevel} / ${app.maxLevelReached}`, 0xFFFFD85A);
   const musicOn = app.musicVolume > 0;
   option(layout.audio, t.audioLabel, musicOn ? t.musicVolume(app.musicVolume) : t.musicOff, 0xFF63DDFF);
+  option(layout.editor, t.editorLabel, '', 0xFFFF914D);
   drawBonusGuide(layout.bonusCard);
+  drawAchievements(layout);
   drawTitleScores(layout);
   text(t.footer, 180, layout.footerY, 8.5, 0xFF6F83A4, false);
   ctx.restore();
@@ -2399,6 +2711,7 @@ function drawDemoBadge() {
 // ---------------------------------------------------------------- logique d'écrans
 
 function activePage() {
+  if (app.editorOpen && st.screen === 'TITLE') return null;
   if (app.settingsOpen && (st.screen === 'TITLE' || st.screen === 'PAUSED')) return app.settingsPage;
   if (st.screen === 'TITLE') return app.titlePage;
   return null;
@@ -2497,6 +2810,8 @@ function checkScreenChange() {
 
 function openHighScores() {
   if (st.screen !== 'GAME_OVER' && st.screen !== 'VICTORY') return;
+  // Un tableau de l'éditeur n'a pas de classement : on retourne à l'éditeur.
+  if (st.mode === 'CUSTOM') { st.screen = 'TITLE'; app.lastScreen = 'TITLE'; app.editorOpen = true; return; }
   const finalScore = st.score, best = st.highScore;
   showLeaderboard(st.difficulty, st.mode);
   st.highScore = Math.max(st.highScore, best);
@@ -2552,6 +2867,7 @@ function handleTitleTouch(x, y) {
     app.startLevel = app.startLevel % app.maxLevelReached + 1; prefs.set('start_level', app.startLevel);
   } else if (l.audio.contains(x, y)) { app.audioSetupVisible = true; app.audioSetupFirstRun = false; }
   else if (l.bonusCard.contains(x, y)) advanceBonusGuide();
+  else if (l.editor.contains(x, y)) openEditor();
 }
 function advanceBonusGuide() { app.bonusIndex = (app.bonusIndex + 1) % 8; app.bonusTimer = 0; app.bonusAnimation = app.reducedMotion ? 0 : 1; }
 
@@ -2676,6 +2992,7 @@ canvas.addEventListener('pointerdown', e => {
     }
     return;
   }
+  if (app.editorOpen && st.screen === 'TITLE') { editorDown(x, y); return; }
   const page = activePage();
   if (page) { const p = app.pointers.get(e.pointerId); p.pressScroll = page.scroll; page.fling = 0; return; }
   switch (st.screen) {
@@ -2707,6 +3024,7 @@ canvas.addEventListener('pointermove', e => {
     if (e.pointerType === 'mouse' && st.screen === 'PLAYING' && app.controlMode === 'DIRECT' && !app.demoMode) engine.movePaddle(toGameX(e.clientX));
     return;
   }
+  if (app.editorOpen && app.editorPainting && st.screen === 'TITLE') { paintEditorCell(toGameX(e.clientX), toGameY(e.clientY)); return; }
   const page = activePage();
   if (!p.dragging && Math.abs(e.clientY - p.startY) > touchSlop) p.dragging = true;
   if (st.screen === 'HIGH_SCORES' && app.initials) {
@@ -2734,6 +3052,7 @@ canvas.addEventListener('pointermove', e => {
 });
 
 function pointerEnd(e, cancelled) {
+  app.editorPainting = false;
   const p = app.pointers.get(e.pointerId);
   if (!p) return;
   app.pointers.delete(e.pointerId);
@@ -2826,7 +3145,7 @@ function externalAction() {
   if (app.demoMode) { stopDemo(); return; }
   if (app.audioSetupVisible && st.screen === 'TITLE') { handleAudioSetupTouch(180, 475); return; }
   switch (st.screen) {
-    case 'TITLE': if (app.settingsOpen) app.settingsOpen = false; else if (titleLayout().secondary) continueSavedGame(); else beginNewGame(); break;
+    case 'TITLE': if (app.editorOpen) break; if (app.settingsOpen) app.settingsOpen = false; else if (titleLayout().secondary) continueSavedGame(); else beginNewGame(); break;
     case 'GAME_OVER': case 'VICTORY': openHighScores(); break;
     case 'HIGH_SCORES': if (!app.pendingEntry) leaveHighScores(); break;
     case 'PAUSED': if (app.settingsOpen) app.settingsOpen = false; else st.screen = 'PLAYING'; break;
@@ -2836,7 +3155,7 @@ function externalAction() {
 function handleBack() {
   if (app.demoMode) { stopDemo(); return; }
   if (st.screen === 'TITLE' && app.audioSetupVisible) { app.audioSetupVisible = false; app.audioSetupFirstRun = false; prefs.set('audio_setup_done', true); return; }
-  if (st.screen === 'TITLE') { app.settingsOpen = false; return; }
+  if (st.screen === 'TITLE') { if (app.editorOpen) closeEditor(); app.settingsOpen = false; return; }
   if (st.screen === 'HIGH_SCORES' && app.initials) { skipInitials(); return; }
   switch (st.screen) {
     case 'PLAYING': engine.pause(); releaseControls(); break;
@@ -2899,7 +3218,7 @@ function frame(now) {
   const elapsed = app.lastFrame === 0 ? 0 : Math.min(MAX_FRAME_TIME, (now - app.lastFrame) / 1000);
   app.lastFrame = now;
   pollGamepads();
-  if (!app.demoMode && !app.audioSetupVisible && !app.settingsOpen && st.screen === 'TITLE' && now - app.lastInteraction >= 60000) startDemo();
+  if (!app.demoMode && !app.audioSetupVisible && !app.settingsOpen && !app.editorOpen && st.screen === 'TITLE' && now - app.lastInteraction >= 60000) startDemo();
   app.clock += elapsed;
   app.shake = Math.max(0, app.shake - elapsed * 15);
   app.flash = Math.max(0, app.flash - elapsed * 1.8);
@@ -2925,6 +3244,8 @@ function frame(now) {
     app.accumulator -= STEP;
   }
   checkScreenChange();
+  checkAchievements(elapsed);
+  app.editorMessageTime = Math.max(0, app.editorMessageTime - elapsed);
   render();
 }
 
@@ -2942,6 +3263,7 @@ function render() {
   }
   ctx.translate(app.offsetX, app.offsetY); ctx.scale(app.viewScale, app.viewScale);
   drawBackdrop(app.offsetY);
+  if (app.editorOpen && st.screen === 'TITLE') { drawEditor(); return; }
   drawBackground();
   drawDeck();
   if (st.screen === 'HIGH_SCORES') {
@@ -2953,11 +3275,21 @@ function render() {
     ctx.restore();
   }
   if (app.demoMode) drawDemoBadge();
+  drawAchievementBanner();
 }
 
 // Accès pour les tests automatiques (captures d'écran).
 window.prismSmash = {app, engine, beginNewGame, openHighScores, startDemo, render, resize,
   setScreen(name) { st.screen = name; app.lastScreen = name; }};
+
+// Un lien de tableau (?tableau=…) ouvre l'éditeur avec ce tableau, prêt à être joué.
+{
+  const shared = LevelCode.decode(new URLSearchParams(location.search).get('tableau'));
+  if (shared && LevelCode.playable(shared)) {
+    app.editorGrid = shared; app.editorOpen = true; app.audioSetupVisible = false;
+    app.editorMessage = app.t.levelLoaded; app.editorMessageTime = 6;
+  }
+}
 
 document.documentElement.lang = app.language;
 resize();
