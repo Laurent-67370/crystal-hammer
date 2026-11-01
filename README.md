@@ -8,6 +8,7 @@ Tout tient dans `index.html` (JavaScript et Canvas, sans dépendance ni connexio
 - **Clavier** : flèches ou A / D pour piloter, Espace ou Entrée pour lancer et tirer, P pour la pause, Échap pour revenir.
 - **Manette** : croix ou stick, A / X pour lancer et tirer, START pour la pause.
 - Français et anglais ; sons synthétisés ; musique originale de style Amiga (« Prism Drive », un module ProTracker lu par un lecteur intégré) ; musique personnelle possible, y compris les modules `.mod` (le fichier reste sur l'appareil).
+- **10 bonus** (dont la balle de feu et le bouclier) et des **cristaux explosifs et trésors** (Défi du jour, Survie, éditeur : lettres `h` et `i` dans les liens).
 - **14 succès**, des **boss** aux tableaux 10, 20 et 30 du mode Classique, et un **éditeur de tableaux** : on dessine son tableau, on le joue et on le partage par un lien (`?tableau=…`, même format que `LevelCode.kt` de la version Android).
 - **Installable comme une application** (icône sur l'écran d'accueil, plein écran, jouable hors connexion) : sur Android, menu de Chrome → « Installer l'application » ; sur iPhone, Safari → Partager → « Sur l'écran d'accueil » ; sur ordinateur, icône d'installation dans la barre d'adresse. Le jeu se met à jour tout seul à la visite suivante.
 - Série du Défi du jour 🔥 : jours consécutifs avec un défi joué jusqu'au bout, affichée sur l'accueil, en fin de défi et dans le score partagé.
