@@ -6,6 +6,11 @@
 <meta name="theme-color" content="#030611">
 <meta name="description" content="Prism Smash — casse-briques rétro : 30 tableaux de prismes, bonus, lasers et vers à écraser.">
 <title>Prism Smash</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Prism Smash">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 108 108'%3E%3Cpath fill='%23071226' d='M0 0h108v108H0z'/%3E%3Cpath fill='%2317365E' d='M54 7l37 21v52L54 101 17 80V28z'/%3E%3Cpath fill='%235DE7FF' d='M54 14l28 17-18 8H44L26 31z'/%3E%3Cpath fill='%23D9FBFF' d='M44 39h20l-6 37h-8z'/%3E%3Cpath fill='%233C7EFF' d='M26 31l18 8 6 37 4 18-28-17z'/%3E%3Cpath fill='%23875DFF' d='M82 31l-18 8-6 37-4 18 28-17z'/%3E%3Cpath fill='%23fff' d='M54 14l10 25H44z'/%3E%3C/svg%3E">
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#030611}
@@ -149,6 +154,23 @@ function linkedMode() {
   return found || null;
 }
 
+// Série du Défi du jour (comme DailyStreak.kt) : jours consécutifs avec au moins un défi joué jusqu'au bout.
+function previousDay(date) {
+  const d = new Date(Math.floor(date / 10000), Math.floor(date / 100) % 100 - 1, date % 100);
+  d.setDate(d.getDate() - 1);
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+const Streak = {
+  get() { return {last: prefs.get('daily_last_date', 0), current: prefs.get('daily_streak', 0), best: prefs.get('daily_best_streak', 0)}; },
+  shown(day) { const s = Streak.get(); return s.last === day || s.last === previousDay(day) ? s.current : 0; },
+  played(day) {
+    const s = Streak.get();
+    if (s.last === day) return;
+    const next = s.last === previousDay(day) ? s.current + 1 : 1;
+    prefs.set('daily_last_date', day); prefs.set('daily_streak', next); prefs.set('daily_best_streak', Math.max(s.best, next));
+  }
+};
+
 // Partage : milliers séparés, et une case pleine par tableau du défi terminé (comme LevelGenerator.DAILY_STAGES).
 const groupDigits = (n, sep) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, sep);
 const dailyBoxes = n => { const c = Math.max(0, Math.min(3, n)); return '🟦'.repeat(c) + '⬛'.repeat(3 - c); };
@@ -204,6 +226,7 @@ const TEXTS = {
     modeIs: m => `MODE ${m}`, timeLeft: n => `TEMPS ${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`,
     wave: n => `VAGUE ${n}`, dailyStage: (n, c) => `DÉFI ${n}/${c}`, timeUp: 'TEMPS ÉCOULÉ', wallFell: 'LE MUR EST TOMBÉ',
     dailyDone: 'DÉFI RELEVÉ !',
+    streakLine: (c, b) => `SÉRIE : ${c} JOUR${c > 1 ? 'S' : ''}  •  RECORD ${b}`, streakShare: n => `🔥 ${n} jours d'affilée`,
     section: {SOUND: 'SON', CONTROLS: 'COMMANDES', DISPLAY: 'AFFICHAGE', BACKUP: 'SAUVEGARDE'},
     setting: {SOUND: 'EFFETS SONORES', EFFECTS_VOLUME: 'VOLUME DES EFFETS', MUSIC: 'MUSIQUE', MUSIC_VOLUME: 'VOLUME DE LA MUSIQUE',
       MUSIC_CHOOSE: 'CHOISIR UNE PISTE', MUSIC_REMOVE: 'MUSIQUE DU JEU', CONTROLS: 'CONTRÔLES', TOUCH_SENSITIVITY: 'SENSIBILITÉ TACTILE',
@@ -269,6 +292,7 @@ const TEXTS = {
     modeIs: m => `MODE ${m}`, timeLeft: n => `TIME ${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`,
     wave: n => `WAVE ${n}`, dailyStage: (n, c) => `CHALLENGE ${n}/${c}`, timeUp: "TIME'S UP", wallFell: 'THE WALL CAME DOWN',
     dailyDone: 'CHALLENGE COMPLETE!',
+    streakLine: (c, b) => `STREAK: ${c} DAY${c > 1 ? 'S' : ''}  •  BEST ${b}`, streakShare: n => `🔥 ${n} days in a row`,
     section: {SOUND: 'SOUND', CONTROLS: 'CONTROLS', DISPLAY: 'DISPLAY', BACKUP: 'BACKUP'},
     setting: {SOUND: 'SOUND EFFECTS', EFFECTS_VOLUME: 'EFFECTS VOLUME', MUSIC: 'MUSIC', MUSIC_VOLUME: 'MUSIC VOLUME',
       MUSIC_CHOOSE: 'CHOOSE A TRACK', MUSIC_REMOVE: 'GAME MUSIC', CONTROLS: 'CONTROLS', TOUCH_SENSITIVITY: 'TOUCH SENSITIVITY',
@@ -2071,7 +2095,9 @@ function drawRunSummary(victory) {
     : st.mode === 'TIME_ATTACK' ? t.timeUp : st.mode === 'SURVIVAL' && st.lives > 0 ? t.wallFell : t.gameOver;
   text(title, 180, 198, 22, 0xFF6DE6FF, true);
   text(`${t.score}  ${pad6(st.score)}`, 180, 237, 20, 0xFFFFD85A, true, 'center', true);
-  text(st.mode === 'CLASSIC' ? t.difficultyIs(t.difficulty[st.difficulty.id]) : t.modeIs(t.mode[st.mode]), 180, 261, 9, 0xFFB5C8E2, true, 'center', true);
+  const streak = Streak.get();
+  text(st.mode === 'CLASSIC' ? t.difficultyIs(t.difficulty[st.difficulty.id])
+    : st.mode === 'DAILY' ? t.streakLine(streak.current, streak.best) : t.modeIs(t.mode[st.mode]), 180, 261, 9, 0xFFB5C8E2, true, 'center', true);
   const rows = [[t.levelsCleared, s.levelsCompleted], [t.crystalsBroken, s.bricksDestroyed], [t.bonusesCollected, s.powerUpsCollected],
     [t.bestStreak, s.bestCombo], [t.laserAccuracy, s.laserShots === 0 ? '—' : `${laserPrecision(s)} %`]];
   rows.forEach(([label, value], i) => {
@@ -2091,7 +2117,13 @@ function shareRunResult() {
   const seed = st.mode === 'DAILY' && st.dailySeed ? st.dailySeed : today();
   const date = `${String(seed % 100).padStart(2, '0')}/${String(Math.floor(seed / 100) % 100).padStart(2, '0')}/${Math.floor(seed / 10000)}`;
   const url = `${location.origin}${location.pathname}?mode=${SHARE_MODES[st.mode]}`;
-  const message = app.t.shareMessage(st.mode, st.score, detail, date, url);
+  let message = app.t.shareMessage(st.mode, st.score, detail, date, url);
+  const streak = Streak.get().current;
+  if (st.mode === 'DAILY' && streak >= 2) {
+    // La série s'insère juste avant la ligne du lien, comme dans la version Android.
+    const cut = message.lastIndexOf('\n');
+    message = message.slice(0, cut) + '\n' + app.t.streakShare(streak) + message.slice(cut);
+  }
   if (navigator.share) { navigator.share({text: message}).catch(() => {}); return; }
   const copied = () => toast(app.t.shareCopied);
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(message).then(copied, () => window.prompt('', message));
@@ -2210,7 +2242,8 @@ function drawTitleScreen() {
   } else text(t.play, 180, p.centerY + 7, 20, 0xFFFFFFFF, true);
   text(app.selectedMode === 'CLASSIC' ? t.controlHint[app.controlMode] : t.modeHint[app.selectedMode], 180, layout.hintY, 9.5, 0xFFB5C8E2, false);
   drawSettingsButton(layout.settings);
-  option(layout.mode, t.modeLabel, t.mode[app.selectedMode], 0xFF65E572);
+  const streak = Streak.shown(today());
+  option(layout.mode, t.modeLabel, app.selectedMode === 'DAILY' && streak > 0 ? `${t.mode.DAILY}  🔥${streak}` : t.mode[app.selectedMode], 0xFF65E572);
   if (layout.difficulty) option(layout.difficulty, t.difficultyLabel, t.difficulty[app.selectedDifficulty.id], 0xFFB18CFF);
   if (layout.startLevel) option(layout.startLevel, t.startLevelLabel, `${app.startLevel} / ${app.maxLevelReached}`, 0xFFFFD85A);
   const musicOn = app.musicVolume > 0;
@@ -2455,6 +2488,8 @@ function checkScreenChange() {
   app.lastScreen = st.screen;
   if (!changed) return;
   // Seul le mode Classique garde un point de reprise et un tableau de départ.
+  // Un défi joué jusqu'au bout (gagné ou perdu) prolonge la série du jour où il a commencé.
+  if (st.mode === 'DAILY' && (st.screen === 'GAME_OVER' || st.screen === 'VICTORY')) Streak.played(st.dailySeed);
   if (st.mode !== 'CLASSIC') return;
   if (st.screen === 'INTRO') { saveCheckpoint(); rememberLevelReached(st.level); }
   if (st.screen === 'GAME_OVER' || st.screen === 'VICTORY') prefs.set('has_progress', false);
@@ -2927,6 +2962,11 @@ window.prismSmash = {app, engine, beginNewGame, openHighScores, startDemo, rende
 document.documentElement.lang = app.language;
 resize();
 requestAnimationFrame(frame);
+
+// Application installable et jouable hors ligne (en https, ou en local pour les essais ; pas depuis un fichier).
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
 </script>
 </body>
 </html>

@@ -8,6 +8,8 @@ Tout tient dans `index.html` (JavaScript et Canvas, sans dépendance ni connexio
 - **Clavier** : flèches ou A / D pour piloter, Espace ou Entrée pour lancer et tirer, P pour la pause, Échap pour revenir.
 - **Manette** : croix ou stick, A / X pour lancer et tirer, START pour la pause.
 - Français et anglais ; sons synthétisés ; musique originale de style Amiga (« Prism Drive », un module ProTracker lu par un lecteur intégré) ; musique personnelle possible, y compris les modules `.mod` (le fichier reste sur l'appareil).
+- **Installable comme une application** (icône sur l'écran d'accueil, plein écran, jouable hors connexion) : sur Android, menu de Chrome → « Installer l'application » ; sur iPhone, Safari → Partager → « Sur l'écran d'accueil » ; sur ordinateur, icône d'installation dans la barre d'adresse. Le jeu se met à jour tout seul à la visite suivante.
+- Série du Défi du jour 🔥 : jours consécutifs avec un défi joué jusqu'au bout, affichée sur l'accueil, en fin de défi et dans le score partagé.
 - Partage du score en fin de partie (panneau de partage du système, sinon copie du message), avec un lien qui ouvre le jeu sur le même mode : `?mode=classique`, `chrono`, `survie` ou `defi`.
 - Scores, progression et réglages sont enregistrés dans le navigateur ; aucune donnée n'est envoyée.
 
