@@ -1,6 +1,8 @@
 # Prism Smash — version web
 
-Casse-briques rétro jouable dans le navigateur, sur téléphone comme sur ordinateur : 30 tableaux de prismes, 8 bonus, des vers et des formes 3D (cube, pyramide, octaèdre, prisme) à abattre ou à écraser, et quatre modes de jeu : Classique (3 difficultés), Chrono, Survie et Défi du jour, chacun avec son top 20.
+Casse-briques rétro jouable dans le navigateur, sur téléphone comme sur ordinateur : 30 tableaux de prismes, 10 bonus, des boss, des vers et des formes 3D (cube, pyramide, octaèdre, prisme) à abattre ou à écraser, et quatre modes de jeu : Classique (3 difficultés), Chrono, Survie et Défi du jour, chacun avec son top 20. Un Défi du jour, un éditeur de tableaux et 14 succès complètent le tout.
+
+**Jouer** : https://laurent-67370.github.io/crystal-hammer/
 
 Tout tient dans `index.html` (JavaScript et Canvas, sans dépendance ni connexion) : ouvrir le fichier suffit, ou publier le dépôt avec GitHub Pages.
 
