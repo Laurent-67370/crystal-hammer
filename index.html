@@ -56,10 +56,14 @@ const POWERS = [
   {id: 'WIDE', color: 0xFF397BFF, symbol: '↔'}, {id: 'SLOW', color: 0xFFFFD84A, symbol: 'S'},
   {id: 'STICKY', color: 0xFF54E88A, symbol: 'C'}, {id: 'MULTI', color: 0xFF54E8FF, symbol: '3'},
   {id: 'LASER', color: 0xFFFF596D, symbol: 'L'}, {id: 'LIFE', color: 0xFFFF9B45, symbol: '+'},
-  {id: 'SKIP', color: 0xFFFF70D7, symbol: '»'}, {id: 'DEATH', color: 0xFFB8BDC9, symbol: '×'}
+  {id: 'SKIP', color: 0xFFFF70D7, symbol: '»'}, {id: 'FIRE', color: 0xFFFF7A2E, symbol: 'F'},
+  {id: 'SHIELD', color: 0xFF7CF2C4, symbol: '▁'}, {id: 'DEATH', color: 0xFFB8BDC9, symbol: '×'}
 ];
+// Cristaux spéciaux (comme CrystalKind.kt) : l'explosif brise ses huit voisins, le trésor lâche toujours un bonus.
+const EXPLOSIVE = 8, TREASURE = 9, FIRE_TIME = 8, SHIELD_Y = 590 + 24;
 const POWER_WEIGHTS = {
-  AMIGA: [18, 15, 15, 12, 16, 4, 4, 16], NORMAL: [18, 15, 15, 13, 16, 6, 5, 12], EASY: [18, 15, 15, 15, 15, 8, 7, 7]
+  // Large, lente, collante, multi, laser, vie, saut, feu, bouclier, malus (comme GameBalance.kt).
+  AMIGA: [16, 13, 13, 11, 14, 4, 4, 7, 6, 12], NORMAL: [16, 13, 13, 12, 14, 6, 4, 7, 6, 9], EASY: [16, 13, 13, 13, 13, 7, 6, 7, 7, 5]
 };
 const WORM_SQUASH_POINTS = 100;
 
@@ -178,12 +182,16 @@ const LevelCode = {
   symbol(b) {
     if (b.hits <= 0) return '.';
     if (b.solid) return 'x';
+    if (b.color === EXPLOSIVE) return 'h';
+    if (b.color === TREASURE) return 'i';
     if (b.maxHits >= 3) return String(b.color);
     return String.fromCharCode((b.maxHits === 2 ? 65 : 97) + b.color - 1);
   },
   brick(ch) {
     if (ch === '.') return {color: 0, maxHits: 0, hits: 0, solid: false};
     if (ch === 'x') return {color: 0, maxHits: 1, hits: 1, solid: true};
+    if (ch === 'h') return cell(EXPLOSIVE, 1);
+    if (ch === 'i') return cell(TREASURE, 1);
     if (ch >= 'a' && ch <= 'g') return cell(ch.charCodeAt(0) - 96, 1);
     if (ch >= 'A' && ch <= 'G') return cell(ch.charCodeAt(0) - 64, 2);
     if (ch >= '1' && ch <= '7') return cell(+ch, 3);
@@ -231,12 +239,13 @@ const TEXTS = {
     languageName: 'FRANÇAIS', difficulty: {AMIGA: 'ARCADE', NORMAL: 'NORMALE', EASY: 'FACILE'},
     controlMode: {RELATIVE: 'GLISSEMENT', DIRECT: 'DIRECT', ZONES: 'ZONES G / D'},
     sensitivityLow: 'FAIBLE', sensitivityNormal: 'NORMALE', sensitivityHigh: 'ÉLEVÉE', on: 'OUI', off: 'NON',
-    bonusNames: ['VAISSEAU LARGE', 'BALLE LENTE', 'CRISTAL COLLANT', 'MULTI-BALLES', 'LASER JUMELÉ', 'VIE SUPPLÉMENTAIRE', 'SAUT DE TABLEAU', 'MALUS : À ÉVITER'],
+    bonusNames: ['VAISSEAU LARGE', 'BALLE LENTE', 'CRISTAL COLLANT', 'MULTI-BALLES', 'LASER JUMELÉ', 'VIE SUPPLÉMENTAIRE', 'SAUT DE TABLEAU', 'BALLE DE FEU', 'BOUCLIER', 'MALUS : À ÉVITER'],
     bonusDescriptions: [
       ['Plus de largeur pendant 18 s', 'pour rattraper la balle.'], ['Ralentit les balles', 'pour mieux viser et anticiper.'],
       ['Capture la balle au contact.', 'Retouche pour la relancer.'], ['Divise la balle en trois', 'pour casser plus de cristaux.'],
       ['Touche pour tirer pendant 12 s', 'et viser les cristaux.'], ['Ajoute immédiatement', 'une vie à ta partie.'],
-      ['Termine instantanément', 'le tableau en cours.'], ['Fait perdre une vie !', 'Laisse filer ce cristal gris.']],
+      ['Termine instantanément', 'le tableau en cours.'], ['Pendant 8 s, la balle traverse', 'les cristaux sans rebondir.'],
+      ['Une barrière sous le vaisseau', 'renvoie une balle perdue.'], ['Fait perdre une vie !', 'Laisse filer ce cristal gris.']],
     subtitle: 'CASSE-BRIQUES RÉTRO', continueAt: l => `CONTINUER  •  TABLEAU ${l}`, newGame: 'NOUVELLE PARTIE', play: 'JOUER',
     controlHint: {RELATIVE: 'Glisse pour piloter  •  touche pour lancer ou tirer', DIRECT: 'Guide le vaisseau  •  touche pour lancer ou tirer', ZONES: 'Zones pour piloter  •  centre pour lancer ou tirer'},
     difficultyLabel: 'DIFFICULTÉ', startLevelLabel: 'TABLEAU DE DÉPART', audioLabel: 'AUDIO / MA MUSIQUE',
@@ -247,7 +256,7 @@ const TEXTS = {
     musicToggle: e => `MUSIQUE  ${e ? 'OUI' : 'NON'}`, effectsToggle: e => `EFFETS SONORES  ${e ? 'OUI' : 'NON'}`,
     chooseMyMusic: 'CHOISIR MA MUSIQUE', confirm: 'VALIDER', gameTheme: 'PRISM DRIVE · MUSIQUE DU JEU',
     score: 'SCORE', best: s => `RECORD ${s}`, levelOf: l => `NIVEAU ${l}/30`, lives: 'VIES',
-    wide: s => `LARGE ${s}`, sticky: s => `COLLE ${s}`, laser: s => `LASER ${s}`, extraLife: 'VIE SUPPLÉMENTAIRE !',
+    wide: s => `LARGE ${s}`, sticky: s => `COLLE ${s}`, laser: s => `LASER ${s}`, fire: s => `FEU ${s}`, extraLife: 'VIE SUPPLÉMENTAIRE !',
     tapToLaunch: 'TOUCHEZ POUR LANCER', levelComplete: 'NIVEAU TERMINÉ', points: p => `+ ${p} POINTS`,
     zoneLeft: '◀ GAUCHE', zoneRight: 'DROITE ▶', zoneCentre: 'CENTRE : LANCER / TIRER', launchFire: 'LANCER / TIRER',
     directGuide: 'POSE LE DOIGT SOUS LE VAISSEAU', swipeGuide: 'GLISSE ICI POUR PILOTER', deckHint: 'TOUCHE : LANCER  •  MAINTIENS : TIRER',
@@ -282,7 +291,7 @@ const TEXTS = {
     achievement: {
       FIRST_STAGE: ['Premier tableau', 'Terminer un tableau'], PERFECT_STAGE: ['Sans faute', 'Terminer un tableau sans perdre de balle'],
       COMBO_25: ['Réaction en chaîne', "Briser 25 cristaux d'affilée"], SHARPSHOOTER: ["Tireur d'élite", 'Toucher 30 fois au laser dans une partie'],
-      COLLECTOR: ['Collectionneur', 'Attraper les 7 bonus dans une partie'], HUNTER: ['Chasseur', 'Abattre 10 ennemis dans une partie'],
+      COLLECTOR: ['Collectionneur', 'Attraper tous les bonus dans une partie'], HUNTER: ['Chasseur', 'Abattre 10 ennemis dans une partie'],
       BOSS: ['Tombeur de géant', 'Vaincre un boss'], HALFWAY: ['Mi-parcours', 'Atteindre le tableau 15 en Classique'],
       CHAMPION: ['Champion', 'Terminer les 30 tableaux en Classique'], SPRINTER: ['Sprinteur', 'Terminer 5 tableaux au Chrono'],
       SURVIVOR: ['Survivant', 'Atteindre la vague 3 en Survie'], DAILY_DONE: ['Défi relevé', "Réussir les 3 tableaux d'un Défi du jour"],
@@ -312,12 +321,13 @@ const TEXTS = {
     languageName: 'ENGLISH', difficulty: {AMIGA: 'ARCADE', NORMAL: 'NORMAL', EASY: 'EASY'},
     controlMode: {RELATIVE: 'SWIPE', DIRECT: 'DIRECT', ZONES: 'ZONES L / R'},
     sensitivityLow: 'LOW', sensitivityNormal: 'NORMAL', sensitivityHigh: 'HIGH', on: 'ON', off: 'OFF',
-    bonusNames: ['WIDE SHIP', 'SLOW BALL', 'STICKY SHIP', 'MULTI-BALL', 'TWIN LASER', 'EXTRA LIFE', 'STAGE SKIP', 'TRAP: AVOID IT'],
+    bonusNames: ['WIDE SHIP', 'SLOW BALL', 'STICKY SHIP', 'MULTI-BALL', 'TWIN LASER', 'EXTRA LIFE', 'STAGE SKIP', 'FIREBALL', 'SHIELD', 'TRAP: AVOID IT'],
     bonusDescriptions: [
       ['A wider ship for 18 s', 'to catch the ball more easily.'], ['Slows the balls down', 'to aim and plan ahead.'],
       ['Catches the ball on contact.', 'Tap again to relaunch it.'], ['Splits the ball into three', 'to break more crystals.'],
       ['Tap to fire for 12 s', 'and shoot the crystals.'], ['Instantly adds', 'one life to your game.'],
-      ['Instantly completes', 'the current stage.'], ['Costs you a life!', 'Let this grey crystal fall.']],
+      ['Instantly completes', 'the current stage.'], ['For 8 s the ball smashes', 'through crystals without bouncing.'],
+      ['A barrier under the ship', 'sends one lost ball back up.'], ['Costs you a life!', 'Let this grey crystal fall.']],
     subtitle: 'RETRO BRICK BREAKER', continueAt: l => `CONTINUE  •  STAGE ${l}`, newGame: 'NEW GAME', play: 'PLAY',
     controlHint: {RELATIVE: 'Swipe to steer  •  tap to launch or fire', DIRECT: 'Guide the ship  •  tap to launch or fire', ZONES: 'Side zones to steer  •  centre to launch or fire'},
     difficultyLabel: 'DIFFICULTY', startLevelLabel: 'STARTING STAGE', audioLabel: 'AUDIO / MY MUSIC',
@@ -328,7 +338,7 @@ const TEXTS = {
     musicToggle: e => `MUSIC  ${e ? 'ON' : 'OFF'}`, effectsToggle: e => `SOUND EFFECTS  ${e ? 'ON' : 'OFF'}`,
     chooseMyMusic: 'CHOOSE MY MUSIC', confirm: 'OK', gameTheme: 'PRISM DRIVE · GAME MUSIC',
     score: 'SCORE', best: s => `BEST ${s}`, levelOf: l => `LEVEL ${l}/30`, lives: 'LIVES',
-    wide: s => `WIDE ${s}`, sticky: s => `STICKY ${s}`, laser: s => `LASER ${s}`, extraLife: 'EXTRA LIFE!',
+    wide: s => `WIDE ${s}`, sticky: s => `STICKY ${s}`, laser: s => `LASER ${s}`, fire: s => `FIRE ${s}`, extraLife: 'EXTRA LIFE!',
     tapToLaunch: 'TAP TO LAUNCH', levelComplete: 'STAGE CLEARED', points: p => `+ ${p} POINTS`,
     zoneLeft: '◀ LEFT', zoneRight: 'RIGHT ▶', zoneCentre: 'CENTRE: LAUNCH / FIRE', launchFire: 'LAUNCH / FIRE',
     directGuide: 'PUT YOUR FINGER UNDER THE SHIP', swipeGuide: 'SWIPE HERE TO STEER', deckHint: 'TAP: LAUNCH  •  HOLD: FIRE',
@@ -363,7 +373,7 @@ const TEXTS = {
     achievement: {
       FIRST_STAGE: ['First stage', 'Clear a stage'], PERFECT_STAGE: ['Flawless', 'Clear a stage without losing a ball'],
       COMBO_25: ['Chain reaction', 'Break 25 crystals in a row'], SHARPSHOOTER: ['Sharpshooter', 'Land 30 laser hits in one game'],
-      COLLECTOR: ['Collector', 'Catch all 7 power-ups in one game'], HUNTER: ['Hunter', 'Destroy 10 enemies in one game'],
+      COLLECTOR: ['Collector', 'Catch every power-up in one game'], HUNTER: ['Hunter', 'Destroy 10 enemies in one game'],
       BOSS: ['Giant slayer', 'Defeat a boss'], HALFWAY: ['Halfway there', 'Reach stage 15 in Classic'],
       CHAMPION: ['Champion', 'Clear all 30 stages in Classic'], SPRINTER: ['Sprinter', 'Clear 5 stages in Time Attack'],
       SURVIVOR: ['Survivor', 'Reach wave 3 in Survival'], DAILY_DONE: ['Challenge met', 'Clear all 3 stages of a Daily Challenge'],
@@ -487,7 +497,8 @@ function sweep(x, y, dx, dy, r, left, top, right, bottom) {
 
 const brickLeft = i => LEFT + (i % COLS) * BRICK_WIDTH;
 const brickTop = i => BRICK_TOP + Math.floor(i / COLS) * BRICK_HEIGHT;
-const crystalColor = i => [0xFFE8F4FF, 0xFF55E6FF, 0xFFFF66C4, 0xFFFFD94F, 0xFFFF914D, 0xFFFF5268, 0xFF65E572][i >= 1 && i <= 6 ? i : 0];
+const crystalColor = i => i === EXPLOSIVE ? 0xFFFF6A2B : i === TREASURE ? 0xFFFFC83D
+  : [0xFFE8F4FF, 0xFF55E6FF, 0xFFFF66C4, 0xFFFFD94F, 0xFFFF914D, 0xFFFF5268, 0xFF65E572][i >= 1 && i <= 6 ? i : 0];
 
 function decodeLevel(level) {
   const offset = (level - 1) * 400, bricks = [];
@@ -520,6 +531,8 @@ function generatedRow(random, rowsAdded) {
     else if (kind === 3) half.push(i % 4 < 2 ? cell(accent, maxHits) : emptyCell());
     else half.push(random.nextInt(3) > 0 ? cell(color, 1 + random.nextInt(maxHits)) : emptyCell());
   }
+  // Une rangée sur trois porte un cristal spécial (explosif ou trésor), en miroir.
+  if (random.nextInt(3) === 0) half[random.nextInt(10)] = cell(random.nextFloat() < 0.5 ? EXPLOSIVE : TREASURE, 1);
   return Array.from({length: COLS}, (_, c) => Object.assign({}, c < 10 ? half[9 - c] : half[c - 10]));
 }
 
@@ -550,8 +563,11 @@ function dailyLevel(seed, stage) {
     if (!filled) continue;
     const band = clamp(Math.floor((r - top) * 3 / (bottom - top + 1)), 0, 2);
     const hits = (r === top || random.nextInt(6) === 0) ? maxHits : 1 + random.nextInt(maxHits);
-    grid[r * COLS + 10 + c] = cell(palette[band], hits);
-    grid[r * COLS + 9 - c] = cell(palette[band], hits);
+    // Quelques cristaux spéciaux : un sur trente explose, un sur trente lâche un bonus (même tirage qu'en Kotlin).
+    const special = random.nextInt(30);
+    const make = () => special === 0 ? cell(EXPLOSIVE, 1) : special === 1 ? cell(TREASURE, 1) : cell(palette[band], hits);
+    grid[r * COLS + 10 + c] = make();
+    grid[r * COLS + 9 - c] = make();
   }
   if (!grid.some(b => b.hits > 0)) for (let c = 4; c < COLS - 4; c++) grid[(top + 2) * COLS + c] = cell(palette[0], 1);
   return grid;
@@ -575,7 +591,7 @@ class Engine {
     this.s = {
       screen: 'TITLE', score: 0, highScore: 0, lives: 3, level: 1, difficulty: Difficulty.NORMAL, stats: newStats(),
       mode: 'CLASSIC', timeLeft: 0, levelOrder: [], advanceClock: 0, advanceInterval: 0, rowsAdded: 0, dailySeed: 0,
-      customBricks: null, lostThisLevel: 0, boss: null, shards: [],
+      customBricks: null, lostThisLevel: 0, boss: null, shards: [], fireTime: 0, shield: false,
       nextExtraLife: 10000, paddleX: WIDTH / 2, paddleWidth: 66, wideTime: 0, stickyTime: 0, laserTime: 0,
       laserCooldown: 0, stateTime: 0, wormClock: 9, bricks: [], fireHeld: false, balls: [], powerUps: [],
       lasers: [], worms: [], particles: [], random: mulberry32(1987)
@@ -638,7 +654,7 @@ class Engine {
   resetVolley() {
     const s = this.s;
     s.balls = []; s.powerUps = []; s.lasers = []; s.worms = []; s.particles = []; s.shards = [];
-    s.wideTime = 0; s.stickyTime = 0; s.laserTime = 0; s.laserCooldown = 0; s.fireHeld = false;
+    s.wideTime = 0; s.stickyTime = 0; s.laserTime = 0; s.fireTime = 0; s.laserCooldown = 0; s.fireHeld = false;
     s.paddleWidth = 66; s.paddleX = WIDTH / 2;
     s.balls.push(this.ball(s.paddleX, PADDLE_Y - 5, 0, 0, true));
   }
@@ -709,6 +725,7 @@ class Engine {
     s.stickyTime = Math.max(0, s.stickyTime - dt);
     if (stickyWasActive && s.stickyTime === 0) s.balls.filter(b => b.stuck && b.stickyCatch).forEach(b => this.launch(b));
     s.laserTime = Math.max(0, s.laserTime - dt);
+    s.fireTime = Math.max(0, s.fireTime - dt);
     s.laserCooldown = Math.max(0, s.laserCooldown - dt);
     if (s.fireHeld && s.laserTime > 0 && !s.balls.some(b => b.stuck)) this.fireLaser();
     s.paddleWidth = s.wideTime > 0 ? 98 : 66;
@@ -804,6 +821,11 @@ class Engine {
         b.stallTime = moved < 0.01 ? b.stallTime + dt : 0;
         if (b.stallTime >= 1.25) ballRelease(b);
       }
+      // Bouclier : la première balle qui passe sous le vaisseau rebondit, puis le bouclier disparaît.
+      if (s.shield && b.vy > 0 && b.y + b.radius >= SHIELD_Y) {
+        b.y = SHIELD_Y - b.radius - 0.02; b.vy = -Math.abs(b.vy); s.shield = false;
+        this.burst(b.x, SHIELD_Y, 0xFF7CF2C4, 10); this.onEvent('PADDLE');
+      }
       if (b.y - b.radius > BOTTOM) s.balls.splice(i, 1);
     }
     if (s.balls.length === 0) this.loseLife();
@@ -841,6 +863,12 @@ class Engine {
       if (contacts.length === 0) { b.x += dx; b.y += dy; return; }
       const time = contacts[0].hit.time;
       b.x += dx * time; b.y += dy * time;
+      // Balle de feu : les cristaux destructibles sont pulvérisés sans rebond.
+      if (this.s.fireTime > 0 && !contacts.some(c => this.s.bricks[c.index].solid)) {
+        for (const c of contacts.slice()) if (this.s.bricks[c.index].hits > 0) { this.s.bricks[c.index].hits = 1; this.hitBrick(c.index); }
+        remaining *= 1 - time;
+        continue;
+      }
       for (const c of contacts) {
         const into = b.vx * c.hit.nx + b.vy * c.hit.ny;
         if (into < 0) { b.vx -= 2 * into * c.hit.nx; b.vy -= 2 * into * c.hit.ny; }
@@ -895,10 +923,23 @@ class Engine {
       s.stats.bestCombo = Math.max(s.stats.bestCombo, s.stats.currentCombo);
       // Le mode Arcade garde la règle d'origine : un seul bonus en chute à la fois.
       const maxFalling = s.difficulty === Difficulty.AMIGA ? 1 : 2;
-      if (brick.color !== 7 && s.powerUps.length < maxFalling && s.random.nextFloat() < s.difficulty.dropChance) this.spawnPowerUp(cx, cy);
+      if (brick.color === TREASURE) this.spawnPowerUp(cx, cy);
+      else if (brick.color !== 7 && s.powerUps.length < maxFalling && s.random.nextFloat() < s.difficulty.dropChance) this.spawnPowerUp(cx, cy);
       this.accelerateBalls();
+      if (brick.color === EXPLOSIVE) this.explode(index);
     }
     this.onEvent(brick.hits === 0 ? 'BRICK' : 'HARD_BRICK');
+  }
+
+  // Cristal explosif : brise ses huit voisins, ce qui peut déclencher d'autres explosions.
+  explode(index) {
+    const s = this.s, row = Math.floor(index / COLS), col = index % COLS;
+    this.burst(brickLeft(index) + BRICK_WIDTH / 2, brickTop(index) + BRICK_HEIGHT / 2, 0xFFFFB13B, 16);
+    for (let r = row - 1; r <= row + 1; r++) for (let c = col - 1; c <= col + 1; c++) {
+      if (r < 0 || r >= ROWS || c < 0 || c >= COLS || (r === row && c === col)) continue;
+      const n = s.bricks[r * COLS + c];
+      if (n.hits > 0 && !n.solid) { n.hits = 1; this.hitBrick(r * COLS + c); }
+    }
   }
 
   accelerateBalls() {
@@ -942,6 +983,8 @@ class Engine {
       case 'LASER': s.laserTime = 12; break;
       case 'LIFE': if (s.mode === 'TIME_ATTACK') s.timeLeft += TIME_ATTACK_LIFE_BONUS; else s.lives = Math.min(9, s.lives + 1); break;
       case 'SKIP': if (s.mode === 'SURVIVAL') this.clearLowestRow(); else this.completeLevel(); break;
+      case 'FIRE': s.fireTime = FIRE_TIME; break;
+      case 'SHIELD': s.shield = true; break;
       case 'DEATH': this.loseLife(); break;
     }
     if (type !== 'DEATH') { this.addScore(250); this.onEvent('POWER'); }
@@ -1948,6 +1991,20 @@ function drawBrick(g, brick) {
     g.fillStyle = argb(0xFF35424D); g.beginPath(); g.arc(l + 3.2, cy, 0.85, 0, 7); g.arc(r - 3.2, cy, 0.85, 0, 7); g.fill();
     g.fillStyle = argb(0x66FFFFFF); g.fillRect(l + 5, t + 5.2, r - l - 10, 0.6);
   } else P([[l + 4, t + 4.8], [l + 6.3, t + 3.2], [l + 8.2, t + 4.2], [l + 5.7, t + 5.6]], 0xEFFFFFFF);
+  if (brick.color === EXPLOSIVE) {
+    // Cristal explosif : une petite bombe sombre et sa mèche.
+    g.fillStyle = argb(0xFF2A0F08); g.beginPath(); g.arc(cx, cy + 0.8, 3.1, 0, 7); g.fill();
+    g.beginPath(); g.moveTo(cx + 1.6, cy - 1.6); g.lineTo(cx + 3.2, cy - 3.6); g.lineWidth = 0.9; g.strokeStyle = argb(0xFF2A0F08); g.stroke();
+    g.fillStyle = argb(0xFFFFE27A); g.beginPath(); g.arc(cx + 3.4, cy - 3.9, 0.9, 0, 7); g.fill();
+  } else if (brick.color === TREASURE) {
+    // Cristal trésor : une étoile blanche au centre.
+    g.beginPath();
+    for (let k = 0; k < 8; k++) {
+      const a = k * Math.PI / 4 - Math.PI / 2, rr = k % 2 === 0 ? 3.6 : 1.3;
+      k ? g.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr) : g.moveTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+    }
+    g.closePath(); g.fillStyle = argb(0xFFFFFFFF); g.fill();
+  }
   if (brick.maxHits > 1 && brick.hits < brick.maxHits) {
     g.beginPath(); g.moveTo(cx - 2, t + 3); g.lineTo(cx + 0.5, cy); g.lineTo(cx - 1.5, b - 2);
     g.moveTo(cx + 0.5, cy); g.lineTo(cx + 4, cy - 2.5);
@@ -2011,6 +2068,12 @@ function drawPaddle() {
 }
 
 function drawBall(b) {
+  if (st.fireTime > 0) {
+    // Balle de feu : un halo orange qui vacille autour de la balle.
+    const flicker = app.reducedMotion ? 1 : 0.85 + 0.15 * Math.sin(app.clock * 30);
+    circle(b.x, b.y, b.radius * 2.4 * flicker, 0x66FF7A2E);
+    circle(b.x, b.y, b.radius * 1.6, 0xAAFFB13B);
+  }
   if (app.visualEffects && !app.reducedMotion && !b.stuck) {
     const speed = Math.max(1, hypot(b.vx, b.vy));
     for (let i = 3; i >= 1; i--) circle(b.x - b.vx / speed * i * 4.2, b.y - b.vy / speed * i * 4.2, b.radius * (1 - i * 0.16), withAlpha(0xFF55E6FF, 24 + (4 - i) * 18));
@@ -2128,12 +2191,13 @@ function drawAchievements(layout) {
 }
 
 // Éditeur : grille 20 × 16, outil = couleur 1 à 7, 0 gomme, -1 bloc ; nombre de coups 1 à 3.
-const EDITOR_GRID_BOTTOM = BRICK_TOP + EDITOR_ROWS * BRICK_HEIGHT, PALETTE_TOP = EDITOR_GRID_BOTTOM + 18, PALETTE_SIZE = 34;
+const EDITOR_GRID_BOTTOM = BRICK_TOP + EDITOR_ROWS * BRICK_HEIGHT, PALETTE_TOP = EDITOR_GRID_BOTTOM + 18, PALETTE_SIZE = 28;
+const PALETTE_TOOLS = 11; // sept couleurs, explosif, trésor, bloc, gomme
 const HITS_TOP = PALETTE_TOP + PALETTE_SIZE + 12;
 const EDITOR_PLAY = new Box(40, 500, 176, 542), EDITOR_SHARE = new Box(184, 500, 320, 542);
 const EDITOR_CLEAR = new Box(40, 552, 176, 594), EDITOR_BACK = new Box(184, 552, 320, 594);
-const paletteBox = i => { const gap = (RIGHT - LEFT - 9 * PALETTE_SIZE) / 8, l = LEFT + i * (PALETTE_SIZE + gap); return new Box(l, PALETTE_TOP, l + PALETTE_SIZE, PALETTE_TOP + PALETTE_SIZE); };
-const paletteColor = i => i === 7 ? -1 : i === 8 ? 0 : i + 1;
+const paletteBox = i => { const gap = (RIGHT - LEFT - PALETTE_TOOLS * PALETTE_SIZE) / (PALETTE_TOOLS - 1), l = LEFT + i * (PALETTE_SIZE + gap); return new Box(l, PALETTE_TOP, l + PALETTE_SIZE, PALETTE_TOP + PALETTE_SIZE); };
+const paletteColor = i => i === 9 ? -1 : i === 10 ? 0 : i + 1;
 const hitsBox = h => { const l = 180 - 90 + (h - 1) * 62; return new Box(l, HITS_TOP, l + 54, HITS_TOP + 30); };
 
 // Cristal de l'éditeur : le sprite du jeu, avec le nombre de coups quand il en faut plus d'un.
@@ -2148,6 +2212,7 @@ function saveEditorLevel() { prefs.set('custom_level', LevelCode.encode(app.edit
 function editorBrick() {
   if (app.editorColor === 0) return emptyCell();
   if (app.editorColor === -1) return {color: 0, maxHits: 1, hits: 1, solid: true};
+  if (app.editorColor === EXPLOSIVE || app.editorColor === TREASURE) return cell(app.editorColor, 1);
   return cell(app.editorColor, app.editorHits);
 }
 function editorCell(x, y) {
@@ -2162,7 +2227,7 @@ function editorReady(grid = app.editorGrid) {
 }
 function editorDown(x, y) {
   if (editorCell(x, y) >= 0) { app.editorPainting = true; paintEditorCell(x, y); return; }
-  for (let i = 0; i < 9; i++) if (paletteBox(i).contains(x, y)) app.editorColor = paletteColor(i);
+  for (let i = 0; i < PALETTE_TOOLS; i++) if (paletteBox(i).contains(x, y)) app.editorColor = paletteColor(i);
   for (let h = 1; h <= 3; h++) if (hitsBox(h).contains(x, y)) app.editorHits = h;
   if (EDITOR_PLAY.contains(x, y)) playEditorLevel();
   else if (EDITOR_SHARE.contains(x, y)) shareEditorLevel();
@@ -2202,11 +2267,12 @@ function drawEditor() {
     const b = app.editorGrid[i];
     if (b.hits > 0) drawEditorBrick(brickLeft(i), brickTop(i), BRICK_WIDTH, BRICK_HEIGHT, b);
   }
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < PALETTE_TOOLS; i++) {
     const box = paletteBox(i), tool = paletteColor(i);
     roundRect(box.left, box.top, box.right, box.bottom, 8, 0xFF14243A, tool === app.editorColor ? 0xFFFFD85A : null, 2);
     if (tool === 0) text('⌫', box.centerX, box.centerY + 5, 15, 0xFFFF7180, true);
-    else drawEditorBrick(box.left + 5, box.centerY - 7, PALETTE_SIZE - 10, 14, tool === -1 ? {color: 0, maxHits: 1, hits: 1, solid: true} : cell(tool, app.editorHits));
+    else drawEditorBrick(box.left + 3, box.centerY - 7, PALETTE_SIZE - 6, 14, tool === -1 ? {color: 0, maxHits: 1, hits: 1, solid: true}
+      : tool === EXPLOSIVE || tool === TREASURE ? cell(tool, 1) : cell(tool, app.editorHits));
   }
   const toolName = app.editorColor === 0 ? t.editorEraser : app.editorColor === -1 ? t.editorSolid : '';
   if (toolName) text(toolName, 180, HITS_TOP - 2, 8, 0xFF9CB2D3, true, 'center', true);
@@ -2243,6 +2309,7 @@ function activeEffects() {
   if (st.wideTime > 0) e.push(t.wide(Math.ceil(st.wideTime)));
   if (st.stickyTime > 0) e.push(t.sticky(Math.ceil(st.stickyTime)));
   if (st.laserTime > 0) e.push(t.laser(Math.ceil(st.laserTime)));
+  if (st.fireTime > 0) e.push(t.fire(Math.ceil(st.fireTime)));
   return e.join('  •  ');
 }
 
@@ -2304,6 +2371,11 @@ function drawGame() {
   drawBricks();
   st.worms.forEach(drawEnemy);
   if (st.boss) drawBoss(st.boss);
+  if (st.shield) {
+    // Bouclier : une barrière lumineuse sous le vaisseau.
+    const a = app.reducedMotion ? 200 : Math.round(150 + 60 * Math.sin(app.clock * 6));
+    roundRect(LEFT + 4, SHIELD_Y - 1.5, RIGHT - 4, SHIELD_Y + 1.5, 1.5, (a << 24 | 0x7CF2C4) >>> 0);
+  }
   st.shards.forEach(drawShard);
   st.powerUps.forEach(drawPowerUp);
   for (const l of st.lasers) {
@@ -2576,7 +2648,7 @@ function drawBonusGuide(box) {
   const t = app.t, type = POWERS[app.bonusIndex], accent = type.color;
   card(box, accent);
   text(t.bonusGuide, box.left + 18, box.top + 26, 9, 0xFF9CB2D3, true, 'left', true);
-  text(`${app.bonusIndex + 1} / 8`, box.right - 18, box.top + 26, 9, accent, true, 'right', true);
+  text(`${app.bonusIndex + 1} / ${POWERS.length}`, box.right - 18, box.top + 26, 9, accent, true, 'right', true);
   const ix = box.left + 52, iy = box.top + 72;
   ctx.save();
   ctx.beginPath(); ctx.rect(box.left + 2, box.top + 34, box.right - box.left - 4, box.bottom - box.top - 60); ctx.clip();
@@ -2869,7 +2941,7 @@ function handleTitleTouch(x, y) {
   else if (l.bonusCard.contains(x, y)) advanceBonusGuide();
   else if (l.editor.contains(x, y)) openEditor();
 }
-function advanceBonusGuide() { app.bonusIndex = (app.bonusIndex + 1) % 8; app.bonusTimer = 0; app.bonusAnimation = app.reducedMotion ? 0 : 1; }
+function advanceBonusGuide() { app.bonusIndex = (app.bonusIndex + 1) % POWERS.length; app.bonusTimer = 0; app.bonusAnimation = app.reducedMotion ? 0 : 1; }
 
 function handleAudioSetupTouch(x, y) {
   if (x < 50 || x > 310) return;
