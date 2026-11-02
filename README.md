@@ -1,6 +1,6 @@
 # Prism Smash — version web
 
-Casse-briques rétro jouable dans le navigateur, sur téléphone comme sur ordinateur : 30 tableaux de prismes, 10 bonus, des boss, des vers et des formes 3D (cube, pyramide, octaèdre, prisme) à abattre ou à écraser, et quatre modes de jeu : Classique (3 difficultés), Chrono, Survie et Défi du jour, chacun avec son top 20. Un éditeur de tableaux et 14 succès complètent le tout.
+Casse-briques rétro jouable dans le navigateur, sur téléphone comme sur ordinateur : 60 tableaux de prismes, 10 bonus, des boss, des vers et des formes 3D (cube, pyramide, octaèdre, prisme) à abattre ou à écraser, et quatre modes de jeu : Classique (3 difficultés), Chrono, Survie et Défi du jour, chacun avec son top 20. Un éditeur de tableaux et 14 succès complètent le tout.
 
 **Jouer** : https://laurent-67370.github.io/crystal-hammer/
 
@@ -11,7 +11,7 @@ Tout tient dans `index.html` (JavaScript et Canvas, sans dépendance ni connexio
 - **Manette** : croix ou stick, A / X pour lancer et tirer, START pour la pause.
 - Français et anglais ; sons synthétisés ; musique originale de style Amiga (« Prism Drive », un module ProTracker lu par un lecteur intégré) ; musique personnelle possible, y compris les modules `.mod` (le fichier reste sur l'appareil).
 - **10 bonus** (dont la balle de feu et le bouclier) et des **cristaux explosifs et trésors** (Défi du jour, Survie, éditeur : lettres `h` et `i` dans les liens).
-- **14 succès**, des **boss** aux tableaux 10, 20 et 30 du mode Classique, et un **éditeur de tableaux** : on dessine son tableau, on le joue et on le partage par un lien (`?tableau=…`, même format que `LevelCode.kt` de la version Android).
+- **14 succès**, un **boss** tous les dix tableaux du mode Classique, et un **éditeur de tableaux** : on dessine son tableau, on le joue et on le partage par un lien (`?tableau=…`, même format que `LevelCode.kt` de la version Android).
 - **Installable comme une application** (icône sur l'écran d'accueil, plein écran, jouable hors connexion) : sur Android, menu de Chrome → « Installer l'application » ; sur iPhone, Safari → Partager → « Sur l'écran d'accueil » ; sur ordinateur, icône d'installation dans la barre d'adresse. Le jeu se met à jour tout seul à la visite suivante.
 - Série du Défi du jour 🔥 : jours consécutifs avec un défi joué jusqu'au bout, affichée sur l'accueil, en fin de défi et dans le score partagé.
 - Partage du score en fin de partie (panneau de partage du système, sinon copie du message), avec un lien qui ouvre le jeu sur le même mode : `?mode=classique`, `chrono`, `survie` ou `defi`.
