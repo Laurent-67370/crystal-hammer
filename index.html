@@ -41,7 +41,7 @@ const WIDTH = 360, HEIGHT = 640, LEFT = 8, RIGHT = 352, TOP = 52, BOTTOM = 640;
 const PADDLE_Y = 590, PADDLE_HEIGHT = 12, COLS = 20, ROWS = 20, BRICK_TOP = 108;
 const BRICK_WIDTH = (RIGHT - LEFT) / COLS, BRICK_HEIGHT = 16;
 // Même numéro que la version Android correspondante (versionName de build.gradle.kts).
-const VERSION = '1.24.0';
+const VERSION = '1.25.0';
 const LEVEL_COUNT = 60, MAX_BOUNCES_PER_STEP = 4, CONTACT_TIE = 1e-4, SEPARATION = 0.02;
 const DECK_MIN_HEIGHT = 56, MAX_FRAME_TIME = 0.1, STEP = 1 / 120;
 const MAX_ENTRIES = 20, MAX_NAME_LENGTH = 3;
@@ -251,7 +251,8 @@ const TEXTS = {
       ['Une barrière sous le vaisseau', 'renvoie une balle perdue.'], ['Fait perdre une vie !', 'Laisse filer ce cristal gris.']],
     subtitle: 'CASSE-BRIQUES RÉTRO', continueAt: l => `CONTINUER  •  TABLEAU ${l}`, newGame: 'NOUVELLE PARTIE', play: 'JOUER',
     controlHint: {RELATIVE: 'Glisse pour piloter  •  touche pour lancer ou tirer', DIRECT: 'Guide le vaisseau  •  touche pour lancer ou tirer', ZONES: 'Zones pour piloter  •  centre pour lancer ou tirer'},
-    difficultyLabel: 'DIFFICULTÉ', startLevelLabel: 'TABLEAU DE DÉPART', audioLabel: 'AUDIO / MA MUSIQUE',
+    difficultyLabel: 'DIFFICULTÉ', startLevelLabel: 'TABLEAU DE DÉPART', levelPickerTitle: 'CHOISIR UN TABLEAU', bossTag: 'BOSS',
+    levelPickerHint: (n, total) => `${n} tableaux atteints sur ${total} · touche celui de départ`, audioLabel: 'AUDIO / MA MUSIQUE',
     musicVolume: v => `MUSIQUE ${v} %`, musicOff: 'MUSIQUE NON', bonusGuide: 'GUIDE DES BONUS', tapNext: 'TOUCHE ›',
     topPilots: 'MEILLEURS PILOTES', currentRecord: s => `RECORD ACTUEL  ${s}`, noScore: 'AUCUN SCORE ENREGISTRÉ',
     footer: 'Sans publicité, sans connexion, sans compte', titleScrollHint: '▼  GLISSE : GUIDE DES BONUS ET SCORES',
@@ -333,7 +334,8 @@ const TEXTS = {
       ['A barrier under the ship', 'sends one lost ball back up.'], ['Costs you a life!', 'Let this grey crystal fall.']],
     subtitle: 'RETRO BRICK BREAKER', continueAt: l => `CONTINUE  •  STAGE ${l}`, newGame: 'NEW GAME', play: 'PLAY',
     controlHint: {RELATIVE: 'Swipe to steer  •  tap to launch or fire', DIRECT: 'Guide the ship  •  tap to launch or fire', ZONES: 'Side zones to steer  •  centre to launch or fire'},
-    difficultyLabel: 'DIFFICULTY', startLevelLabel: 'STARTING STAGE', audioLabel: 'AUDIO / MY MUSIC',
+    difficultyLabel: 'DIFFICULTY', startLevelLabel: 'STARTING STAGE', levelPickerTitle: 'CHOOSE A STAGE', bossTag: 'BOSS',
+    levelPickerHint: (n, total) => `${n} of ${total} stages reached · tap where to start`, audioLabel: 'AUDIO / MY MUSIC',
     musicVolume: v => `MUSIC ${v} %`, musicOff: 'MUSIC OFF', bonusGuide: 'BONUS GUIDE', tapNext: 'TAP ›',
     topPilots: 'TOP PILOTS', currentRecord: s => `CURRENT RECORD  ${s}`, noScore: 'NO SCORE YET',
     footer: 'No ads, no Internet connection, no account', titleScrollHint: '▼  SWIPE: BONUS GUIDE AND SCORES',
@@ -1726,7 +1728,7 @@ const app = {
   controlMode: CONTROL_MODES.includes(prefs.get('control_mode')) ? prefs.get('control_mode') : 'RELATIVE',
   selectedDifficulty: Difficulty[prefs.get('difficulty', 'NORMAL')] || Difficulty.NORMAL,
   achievements: new Set((prefs.get('achievements', '') || '').split(',').filter(Boolean)), achievementQueue: [], banner: null, bannerTime: 0,
-  editorOpen: false, editorGrid: LevelCode.decode(prefs.get('custom_level', '')) || LevelCode.empty(), editorColor: 1, editorHits: 1,
+  levelPickerOpen: false, editorOpen: false, editorGrid: LevelCode.decode(prefs.get('custom_level', '')) || LevelCode.empty(), editorColor: 1, editorHits: 1,
   editorPainting: false, editorMessage: '', editorMessageTime: 0,
   selectedMode: linkedMode() || (MODES.includes(prefs.get('game_mode')) ? prefs.get('game_mode') : 'CLASSIC'), leaderboardMode: 'CLASSIC',
   effectsVolume: prefs.get('effects_volume', 70), musicVolume: prefs.get('music_volume', 0), lastMusicVolume: prefs.get('last_music_volume', 35),
@@ -2257,6 +2259,47 @@ function shareEditorLevel() {
   const copied = () => toast(app.t.shareCopied);
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(message).then(copied, () => window.prompt('', message));
   else window.prompt('', message);
+}
+
+// Écran de sélection du tableau de départ (mode Classique), comme LevelPickerLayout.kt sur Android.
+const PICKER = {columns: 6, cellWidth: 46, cellHeight: 38, gap: 8, pitch: 44, top: 108, titleY: 46, hintY: 78};
+function pickerCell(level) {
+  const left = (WIDTH - (PICKER.columns * PICKER.cellWidth + (PICKER.columns - 1) * PICKER.gap)) / 2, i = level - 1;
+  const x = left + (i % PICKER.columns) * (PICKER.cellWidth + PICKER.gap), y = PICKER.top + Math.floor(i / PICKER.columns) * PICKER.pitch;
+  return new Box(x, y, x + PICKER.cellWidth, y + PICKER.cellHeight);
+}
+function pickerBack() {
+  const bottom = PICKER.top + Math.ceil(LEVEL_COUNT / PICKER.columns) * PICKER.pitch - (PICKER.pitch - PICKER.cellHeight);
+  return new Box(110, bottom + 18, WIDTH - 110, bottom + 58);
+}
+function drawLevelPicker() {
+  const t = app.t;
+  ctx.fillStyle = argb(0xE6050A16); ctx.fillRect(-app.offsetX / app.viewScale, -app.offsetY / app.viewScale, app.cw / app.viewScale, app.ch / app.viewScale);
+  text(t.levelPickerTitle, 180, PICKER.titleY, 20, 0xFFE8FAFF, true, 'center', true);
+  text(t.levelPickerHint(app.maxLevelReached, LEVEL_COUNT), 180, PICKER.hintY, 9, 0xFF9CB2D3, false);
+  for (let level = 1; level <= LEVEL_COUNT; level++) {
+    const box = pickerCell(level), unlocked = level <= app.maxLevelReached, selected = level === app.startLevel, boss = level % BOSS_EVERY === 0;
+    const accent = selected ? 0xFFFFD85A : boss ? 0xFFB18CFF : 0xFF63DDFF;
+    roundRect(box.left, box.top, box.right, box.bottom, 9, selected ? 0xFF3A3212 : unlocked ? 0xE60A1424 : 0x990A1424, unlocked ? accent : 0xFF27364A, selected ? 2 : 1);
+    text(String(level), box.centerX, box.centerY + (boss ? 1 : 5), 14, unlocked ? 0xFFFFFFFF : 0xFF3E4E66, true, 'center', true);
+    if (boss) text(t.bossTag, box.centerX, box.bottom - 5, 6.5, unlocked ? 0xFFB18CFF : 0xFF3E4E66, true, 'center', true);
+    if (!unlocked) {
+      const cx = box.right - 8, cy = box.top + 8;
+      ctx.fillStyle = argb(0xFF4A5C78); ctx.fillRect(cx - 3.5, cy - 0.5, 7, 5.5);
+      ctx.strokeStyle = argb(0xFF4A5C78); ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(cx, cy - 1.5, 2.3, Math.PI, 0); ctx.stroke(); ctx.lineWidth = 1;
+    }
+  }
+  const back = pickerBack();
+  menuButton(back.left, back.top, back.right, back.bottom, t.editorBack, 0xFF9CB2D3);
+}
+function levelPickerDown(x, y) {
+  if (pickerBack().contains(x, y)) { app.levelPickerOpen = false; return; }
+  for (let level = 1; level <= LEVEL_COUNT; level++) {
+    if (!pickerCell(level).contains(x, y)) continue;
+    if (level > app.maxLevelReached) return;
+    app.startLevel = level; prefs.set('start_level', level); app.levelPickerOpen = false;
+    return;
+  }
 }
 
 function drawEditor() {
@@ -2791,7 +2834,7 @@ function drawDemoBadge() {
 // ---------------------------------------------------------------- logique d'écrans
 
 function activePage() {
-  if (app.editorOpen && st.screen === 'TITLE') return null;
+  if ((app.editorOpen || app.levelPickerOpen) && st.screen === 'TITLE') return null;
   if (app.settingsOpen && (st.screen === 'TITLE' || st.screen === 'PAUSED')) return app.settingsPage;
   if (st.screen === 'TITLE') return app.titlePage;
   return null;
@@ -2944,7 +2987,7 @@ function handleTitleTouch(x, y) {
     prefs.set('difficulty', app.selectedDifficulty.id);
     showLeaderboard(app.selectedDifficulty);
   } else if (l.startLevel && l.startLevel.contains(x, y)) {
-    app.startLevel = app.startLevel % app.maxLevelReached + 1; prefs.set('start_level', app.startLevel);
+    app.levelPickerOpen = true;
   } else if (l.audio.contains(x, y)) { app.audioSetupVisible = true; app.audioSetupFirstRun = false; }
   else if (l.bonusCard.contains(x, y)) advanceBonusGuide();
   else if (l.editor.contains(x, y)) openEditor();
@@ -3073,6 +3116,7 @@ canvas.addEventListener('pointerdown', e => {
     return;
   }
   if (app.editorOpen && st.screen === 'TITLE') { editorDown(x, y); return; }
+  if (app.levelPickerOpen && st.screen === 'TITLE') { levelPickerDown(x, y); return; }
   const page = activePage();
   if (page) { const p = app.pointers.get(e.pointerId); p.pressScroll = page.scroll; page.fling = 0; return; }
   switch (st.screen) {
@@ -3225,7 +3269,7 @@ function externalAction() {
   if (app.demoMode) { stopDemo(); return; }
   if (app.audioSetupVisible && st.screen === 'TITLE') { handleAudioSetupTouch(180, 475); return; }
   switch (st.screen) {
-    case 'TITLE': if (app.editorOpen) break; if (app.settingsOpen) app.settingsOpen = false; else if (titleLayout().secondary) continueSavedGame(); else beginNewGame(); break;
+    case 'TITLE': if (app.editorOpen) break; if (app.levelPickerOpen) { app.levelPickerOpen = false; break; } if (app.settingsOpen) app.settingsOpen = false; else if (titleLayout().secondary) continueSavedGame(); else beginNewGame(); break;
     case 'GAME_OVER': case 'VICTORY': openHighScores(); break;
     case 'HIGH_SCORES': if (!app.pendingEntry) leaveHighScores(); break;
     case 'PAUSED': if (app.settingsOpen) app.settingsOpen = false; else st.screen = 'PLAYING'; break;
@@ -3235,7 +3279,7 @@ function externalAction() {
 function handleBack() {
   if (app.demoMode) { stopDemo(); return; }
   if (st.screen === 'TITLE' && app.audioSetupVisible) { app.audioSetupVisible = false; app.audioSetupFirstRun = false; prefs.set('audio_setup_done', true); return; }
-  if (st.screen === 'TITLE') { if (app.editorOpen) closeEditor(); app.settingsOpen = false; return; }
+  if (st.screen === 'TITLE') { if (app.editorOpen) closeEditor(); app.levelPickerOpen = false; app.settingsOpen = false; return; }
   if (st.screen === 'HIGH_SCORES' && app.initials) { skipInitials(); return; }
   switch (st.screen) {
     case 'PLAYING': engine.pause(); releaseControls(); break;
@@ -3298,7 +3342,7 @@ function frame(now) {
   const elapsed = app.lastFrame === 0 ? 0 : Math.min(MAX_FRAME_TIME, (now - app.lastFrame) / 1000);
   app.lastFrame = now;
   pollGamepads();
-  if (!app.demoMode && !app.audioSetupVisible && !app.settingsOpen && !app.editorOpen && st.screen === 'TITLE' && now - app.lastInteraction >= 60000) startDemo();
+  if (!app.demoMode && !app.audioSetupVisible && !app.settingsOpen && !app.editorOpen && !app.levelPickerOpen && st.screen === 'TITLE' && now - app.lastInteraction >= 60000) startDemo();
   app.clock += elapsed;
   app.shake = Math.max(0, app.shake - elapsed * 15);
   app.flash = Math.max(0, app.flash - elapsed * 1.8);
@@ -3344,6 +3388,7 @@ function render() {
   ctx.translate(app.offsetX, app.offsetY); ctx.scale(app.viewScale, app.viewScale);
   drawBackdrop(app.offsetY);
   if (app.editorOpen && st.screen === 'TITLE') { drawEditor(); return; }
+  if (app.levelPickerOpen && st.screen === 'TITLE') { drawLevelPicker(); return; }
   drawBackground();
   drawDeck();
   if (st.screen === 'HIGH_SCORES') {
