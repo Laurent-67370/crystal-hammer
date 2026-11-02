@@ -1,7 +1,7 @@
 {
   "name": "Prism Smash",
   "short_name": "Prism Smash",
-  "description": "Casse-briques rétro : 30 tableaux, 4 modes de jeu et un défi chaque jour.",
+  "description": "Casse-briques rétro : 60 tableaux, 4 modes de jeu, des boss et un défi chaque jour.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
