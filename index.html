@@ -41,7 +41,7 @@ const WIDTH = 360, HEIGHT = 640, LEFT = 8, RIGHT = 352, TOP = 52, BOTTOM = 640;
 const PADDLE_Y = 590, PADDLE_HEIGHT = 12, COLS = 20, ROWS = 20, BRICK_TOP = 108;
 const BRICK_WIDTH = (RIGHT - LEFT) / COLS, BRICK_HEIGHT = 16;
 // Même numéro que la version Android correspondante (versionName de build.gradle.kts).
-const VERSION = '1.25.0';
+const VERSION = '1.25.1';
 const LEVEL_COUNT = 60, MAX_BOUNCES_PER_STEP = 4, CONTACT_TIE = 1e-4, SEPARATION = 0.02;
 const DECK_MIN_HEIGHT = 56, MAX_FRAME_TIME = 0.1, STEP = 1 / 120;
 const MAX_ENTRIES = 20, MAX_NAME_LENGTH = 3;
@@ -652,7 +652,7 @@ class Engine {
       : decodeLevel(s.level);
     s.lostThisLevel = 0; s.shards = [];
     s.boss = s.mode === 'CLASSIC' && s.level % BOSS_EVERY === 0 && !this.demonstration ? this.newBoss() : null;
-    s.screen = 'INTRO'; s.stateTime = 0; s.wormClock = 8; s.paddleX = WIDTH / 2;
+    s.screen = 'INTRO'; s.stateTime = 0; s.wormClock = 8; s.paddleX = WIDTH / 2; this.paddleXAtLastStep = NaN;
     this.resetVolley();
   }
 
@@ -660,7 +660,7 @@ class Engine {
     const s = this.s;
     s.balls = []; s.powerUps = []; s.lasers = []; s.worms = []; s.particles = []; s.shards = [];
     s.wideTime = 0; s.stickyTime = 0; s.laserTime = 0; s.fireTime = 0; s.laserCooldown = 0; s.fireHeld = false;
-    s.paddleWidth = 66; s.paddleX = WIDTH / 2;
+    s.paddleWidth = 66; s.paddleX = WIDTH / 2; this.paddleXAtLastStep = NaN;
     s.balls.push(this.ball(s.paddleX, PADDLE_Y - 5, 0, 0, true));
   }
 
@@ -817,7 +817,7 @@ class Engine {
       if (b.x - b.radius < LEFT) { b.x = LEFT + b.radius; b.vx = Math.abs(b.vx); }
       else if (b.x + b.radius > RIGHT) { b.x = RIGHT - b.radius; b.vx = -Math.abs(b.vx); }
       if (b.y - b.radius < TOP) { b.y = TOP + b.radius; b.vy = Math.abs(b.vy); }
-      this.collidePaddle(b, oldY);
+      this.collidePaddle(b, oldX, oldY);
       this.collideWorms(b);
       this.collideBoss(b);
       if (!b.stuck) {
@@ -834,23 +834,31 @@ class Engine {
       if (b.y - b.radius > BOTTOM) s.balls.splice(i, 1);
     }
     if (s.balls.length === 0) this.loseLife();
+    this.paddleXAtLastStep = s.paddleX;
   }
 
-  collidePaddle(b, oldY) {
+  // Même règle que GameEngine.collidePaddle : face franchie pendant le pas, ou balle encore dans
+  // l'épaisseur du vaisseau quand il arrive sous elle ; zone balayée par le vaisseau depuis le pas précédent ;
+  // position horizontale prise au moment du contact.
+  collidePaddle(b, oldX, oldY) {
     const s = this.s;
     if (b.vy <= 0) return;
-    const half = s.paddleWidth / 2;
-    if (oldY + b.radius > PADDLE_Y || b.y + b.radius < PADDLE_Y) return;
-    if (b.y - b.radius > PADDLE_Y + PADDLE_HEIGHT) return;
-    if (b.x + b.radius < s.paddleX - half || b.x - b.radius > s.paddleX + half) return;
+    const half = s.paddleWidth / 2, oldBottom = oldY + b.radius, bottom = b.y + b.radius;
+    if (bottom < PADDLE_Y) return;
+    const crossed = oldBottom <= PADDLE_Y;
+    if (!crossed && b.y > PADDLE_Y + PADDLE_HEIGHT) return;
+    const contactX = crossed && bottom > oldBottom ? oldX + (b.x - oldX) * ((PADDLE_Y - oldBottom) / (bottom - oldBottom)) : b.x;
+    const previous = Number.isNaN(this.paddleXAtLastStep) || this.paddleXAtLastStep === undefined ? s.paddleX : this.paddleXAtLastStep;
+    const left = Math.min(previous, s.paddleX) - half, right = Math.max(previous, s.paddleX) + half;
+    if (contactX + b.radius < left || contactX - b.radius > right) return;
     b.y = PADDLE_Y - b.radius;
     if (s.stickyTime > 0) {
-      b.stuck = true; b.stickyCatch = true; b.stickOffset = clamp(b.x - s.paddleX, -half + 6, half - 6); b.vx = 0; b.vy = 0;
+      b.stuck = true; b.stickyCatch = true; b.stickOffset = clamp(contactX - s.paddleX, -half + 6, half - 6); b.vx = 0; b.vy = 0;
     } else {
       b.stickyCatch = false; b.stallTime = 0;
       const speed = clamp(hypot(b.vx, b.vy), 150, 330 * s.difficulty.speedScale);
       s.stats.currentCombo = 0;
-      const offset = clamp((b.x - s.paddleX) / half, -1, 1);
+      const offset = clamp((contactX - s.paddleX) / half, -1, 1);
       const angle = (-90 + offset * 62) * Math.PI / 180;
       b.vx = Math.cos(angle) * speed; b.vy = Math.sin(angle) * speed;
     }
