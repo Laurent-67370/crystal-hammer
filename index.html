@@ -41,7 +41,7 @@ const WIDTH = 360, HEIGHT = 640, LEFT = 8, RIGHT = 352, TOP = 52, BOTTOM = 640;
 const PADDLE_Y = 590, PADDLE_HEIGHT = 12, COLS = 20, ROWS = 20, BRICK_TOP = 108;
 const BRICK_WIDTH = (RIGHT - LEFT) / COLS, BRICK_HEIGHT = 16;
 // Même numéro que la version Android correspondante (versionName de build.gradle.kts).
-const VERSION = '1.26.0';
+const VERSION = '1.27.3';
 const LEVEL_COUNT = 60, MAX_BOUNCES_PER_STEP = 4, CONTACT_TIE = 1e-4, SEPARATION = 0.02;
 const DECK_MIN_HEIGHT = 56, MAX_FRAME_TIME = 0.1, STEP = 1 / 120;
 const MAX_ENTRIES = 20, MAX_NAME_LENGTH = 3;
@@ -1581,8 +1581,8 @@ const Music = (() => {
   let url = null, name = null, ctx = null, node = null, gain = null, player = null, playing = false;
   const theme = () => ModModule.parse(Uint8Array.from(atob(THEME_MOD), c => c.charCodeAt(0)));
   let module = theme();
-  // Le mixage se fait par blocs de 4 096 images (~90 ms) : assez de marge pour ne jamais craquer
-  // pendant une image chargée, et aucune dépendance à un fichier séparé (fonctionne aussi hors ligne).
+  // Le mixage se fait par blocs de 8 192 images (~185 ms, comme la version Android 1.27.3) : une image
+  // chargée ou un onglet ralenti ne font plus craquer la musique, sans fichier séparé (fonctionne hors ligne).
   function ensureModule() {
     if (node || !module) return !!node;
     try {
@@ -1590,7 +1590,7 @@ const Music = (() => {
       ctx = ctx || new Ctx();
       player = new ModPlayer(module, ctx.sampleRate);
       gain = ctx.createGain();
-      node = ctx.createScriptProcessor(4096, 0, 2);
+      node = ctx.createScriptProcessor(8192, 0, 2);
       node.onaudioprocess = e => {
         const l = e.outputBuffer.getChannelData(0), r = e.outputBuffer.getChannelData(1);
         if (playing && player) player.render(l, r); else { l.fill(0); r.fill(0); }
