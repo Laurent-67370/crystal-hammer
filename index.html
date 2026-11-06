@@ -41,7 +41,7 @@ const WIDTH = 360, HEIGHT = 640, LEFT = 8, RIGHT = 352, TOP = 52, BOTTOM = 640;
 const PADDLE_Y = 590, PADDLE_HEIGHT = 12, COLS = 20, ROWS = 20, BRICK_TOP = 108;
 const BRICK_WIDTH = (RIGHT - LEFT) / COLS, BRICK_HEIGHT = 16;
 // Même numéro que la version Android correspondante (versionName de build.gradle.kts).
-const VERSION = '1.27.3';
+const VERSION = '1.27.4';
 // Les classements mondiaux (Google Play Jeux) n'existent que dans l'appli Android.
 // Pendant le test fermé, la fiche Play Store est invisible hors testeurs : le bouton mène au groupe des
 // testeurs. À la sortie publique, remplacer par https://play.google.com/store/apps/details?id=io.github.laurent67370.prismsmash
@@ -145,6 +145,11 @@ function darken(color, f) {
   const r = ((color >>> 16) & 255) * f, g = ((color >>> 8) & 255) * f, b = (color & 255) * f;
   return (0xFF000000 | (r << 16) | (g << 8) | b) >>> 0;
 }
+// Mélange de deux couleurs opaques : a = 0 donne « from », 1 donne « to ».
+function mix(from, to, a) {
+  const ch = sh => { const f = (from >>> sh) & 255, t = (to >>> sh) & 255; return Math.floor(f + (t - f) * a); };
+  return (0xFF000000 | (ch(16) << 16) | (ch(8) << 8) | ch(0)) >>> 0;
+}
 function lighten(color, a) {
   const ch = s => { const v = (color >>> s) & 255; return Math.floor(v + (255 - v) * a); };
   return (0xFF000000 | (ch(16) << 16) | (ch(8) << 8) | ch(0)) >>> 0;
@@ -247,6 +252,7 @@ const TEXTS = {
   fr: {
     languageName: 'FRANÇAIS', difficulty: {AMIGA: 'ARCADE', NORMAL: 'NORMALE', EASY: 'FACILE'},
     controlMode: {RELATIVE: 'GLISSEMENT', DIRECT: 'DIRECT', ZONES: 'ZONES G / D'},
+    backdropStyle: ['MOTIFS', 'ATTÉNUÉ', 'UNI'],
     sensitivityLow: 'FAIBLE', sensitivityNormal: 'NORMALE', sensitivityHigh: 'ÉLEVÉE', on: 'OUI', off: 'NON',
     bonusNames: ['VAISSEAU LARGE', 'BALLE LENTE', 'CRISTAL COLLANT', 'MULTI-BALLES', 'LASER JUMELÉ', 'VIE SUPPLÉMENTAIRE', 'SAUT DE TABLEAU', 'BALLE DE FEU', 'BOUCLIER', 'MALUS : À ÉVITER'],
     bonusDescriptions: [
@@ -316,7 +322,7 @@ const TEXTS = {
     section: {SOUND: 'SON', CONTROLS: 'COMMANDES', DISPLAY: 'AFFICHAGE', BACKUP: 'SAUVEGARDE'},
     setting: {SOUND: 'EFFETS SONORES', EFFECTS_VOLUME: 'VOLUME DES EFFETS', MUSIC: 'MUSIQUE', MUSIC_VOLUME: 'VOLUME DE LA MUSIQUE',
       MUSIC_CHOOSE: 'CHOISIR UNE PISTE', MUSIC_REMOVE: 'MUSIQUE DU JEU', CONTROLS: 'CONTRÔLES', TOUCH_SENSITIVITY: 'SENSIBILITÉ TACTILE',
-      GAMEPAD_SENSITIVITY: 'SENSIBILITÉ MANETTE', HAPTICS: 'VIBRATIONS', LANGUAGE: 'LANGUE', VISUAL_EFFECTS: 'EFFETS VISUELS',
+      GAMEPAD_SENSITIVITY: 'SENSIBILITÉ MANETTE', HAPTICS: 'VIBRATIONS', LANGUAGE: 'LANGUE', BACKDROP: 'DÉCOR', VISUAL_EFFECTS: 'EFFETS VISUELS',
       HIGH_CONTRAST: 'CONTRASTE RENFORCÉ', REDUCED_MOTION: 'MOUVEMENTS RÉDUITS', EXPORT: 'EXPORTER', IMPORT: 'RESTAURER', BACK: 'RETOUR À LA PAUSE'},
     backupNote: 'Scores, progression et réglages ; la musique reste sur cet appareil.',
     settingsFooter: 'Échap, START ou P : revenir à la pause', settingsScrollHint: '▼  GLISSE POUR LA SUITE DES RÉGLAGES',
@@ -331,6 +337,7 @@ const TEXTS = {
   en: {
     languageName: 'ENGLISH', difficulty: {AMIGA: 'ARCADE', NORMAL: 'NORMAL', EASY: 'EASY'},
     controlMode: {RELATIVE: 'SWIPE', DIRECT: 'DIRECT', ZONES: 'ZONES L / R'},
+    backdropStyle: ['VIVID', 'SOFT', 'PLAIN'],
     sensitivityLow: 'LOW', sensitivityNormal: 'NORMAL', sensitivityHigh: 'HIGH', on: 'ON', off: 'OFF',
     bonusNames: ['WIDE SHIP', 'SLOW BALL', 'STICKY SHIP', 'MULTI-BALL', 'TWIN LASER', 'EXTRA LIFE', 'STAGE SKIP', 'FIREBALL', 'SHIELD', 'TRAP: AVOID IT'],
     bonusDescriptions: [
@@ -400,7 +407,7 @@ const TEXTS = {
     section: {SOUND: 'SOUND', CONTROLS: 'CONTROLS', DISPLAY: 'DISPLAY', BACKUP: 'BACKUP'},
     setting: {SOUND: 'SOUND EFFECTS', EFFECTS_VOLUME: 'EFFECTS VOLUME', MUSIC: 'MUSIC', MUSIC_VOLUME: 'MUSIC VOLUME',
       MUSIC_CHOOSE: 'CHOOSE A TRACK', MUSIC_REMOVE: 'GAME MUSIC', CONTROLS: 'CONTROLS', TOUCH_SENSITIVITY: 'TOUCH SENSITIVITY',
-      GAMEPAD_SENSITIVITY: 'GAMEPAD SENSITIVITY', HAPTICS: 'VIBRATION', LANGUAGE: 'LANGUAGE', VISUAL_EFFECTS: 'VISUAL EFFECTS',
+      GAMEPAD_SENSITIVITY: 'GAMEPAD SENSITIVITY', HAPTICS: 'VIBRATION', LANGUAGE: 'LANGUAGE', BACKDROP: 'BACKDROP', VISUAL_EFFECTS: 'VISUAL EFFECTS',
       HIGH_CONTRAST: 'HIGH CONTRAST', REDUCED_MOTION: 'REDUCED MOTION', EXPORT: 'EXPORT', IMPORT: 'RESTORE', BACK: 'BACK TO PAUSE'},
     backupNote: 'Scores, progress and settings; your music stays on this device.',
     settingsFooter: 'Esc, START or P: return to the pause menu', settingsScrollHint: '▼  SWIPE FOR MORE SETTINGS',
@@ -1688,7 +1695,7 @@ class TitleLayout {
 const SETTINGS_SECTIONS = [
   ['SOUND', [['SOUND'], ['EFFECTS_VOLUME'], ['MUSIC'], ['MUSIC_VOLUME'], ['MUSIC_CHOOSE', 'MUSIC_REMOVE']]],
   ['CONTROLS', [['CONTROLS'], ['TOUCH_SENSITIVITY'], ['GAMEPAD_SENSITIVITY'], ['HAPTICS']]],
-  ['DISPLAY', [['LANGUAGE'], ['VISUAL_EFFECTS'], ['HIGH_CONTRAST'], ['REDUCED_MOTION']]],
+  ['DISPLAY', [['LANGUAGE'], ['BACKDROP'], ['VISUAL_EFFECTS'], ['HIGH_CONTRAST'], ['REDUCED_MOTION']]],
   ['BACKUP', [['EXPORT', 'IMPORT']]]
 ];
 class SettingsLayout {
@@ -1768,6 +1775,8 @@ const app = {
   effectsVolume: prefs.get('effects_volume', 70), musicVolume: prefs.get('music_volume', 0), lastMusicVolume: prefs.get('last_music_volume', 35),
   audioSetupVisible: !prefs.get('audio_setup_done', false), audioSetupFirstRun: !prefs.get('audio_setup_done', false),
   visualEffects: prefs.get('visual_effects', true), highContrast: prefs.get('high_contrast', false),
+  // Décor du terrain : 0 motifs vifs, 1 atténué (par défaut, plus reposant), 2 uni.
+  backdropStyle: clamp(prefs.get('backdrop_style', 1) | 0, 0, 2),
   reducedMotion: prefs.get('reduced_motion', false) || window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   settingsOpen: false, leaderboard: [], leaderboardDifficulty: Difficulty.NORMAL,
   maxLevelReached: clamp(prefs.get('max_level_reached', prefs.get('saved_level', 1)), 1, LEVEL_COUNT), startLevel: 1,
@@ -1963,7 +1972,16 @@ function drawBackground() {
     g.scale(scale, scale);
     g.fillStyle = argb(0xFF03050D); g.beginPath(); g.roundRect(3, 3, 354, 635, 14); g.fill();
     g.save(); g.beginPath(); g.rect(LEFT, TOP, RIGHT - LEFT, HEIGHT - TOP); g.clip();
-    withContext(g, () => drawPattern(g, level));
+    if (app.backdropStyle === 2) {
+      // Uni : un dégradé sombre teinté par la palette du tableau, sans aucun motif.
+      const palette = PALETTES[Math.floor((level - 1) / 6)], plain = g.createLinearGradient(0, TOP, 0, HEIGHT);
+      plain.addColorStop(0, argb(mix(palette[0], 0xFF060A14, 0.72))); plain.addColorStop(1, argb(0xFF04070F));
+      g.fillStyle = plain; g.fillRect(LEFT, TOP, RIGHT - LEFT, HEIGHT - TOP);
+    } else {
+      withContext(g, () => drawPattern(g, level));
+      // Atténué : les motifs restent devinés sous un voile sombre, pour reposer les yeux en longue partie.
+      if (app.backdropStyle === 1) { g.fillStyle = argb(0xBC060A14); g.fillRect(LEFT, TOP, RIGHT - LEFT, HEIGHT - TOP); }
+    }
     const grad = g.createLinearGradient(0, TOP, 0, HEIGHT);
     grad.addColorStop(0, argb(0x08000000)); grad.addColorStop(1, argb(0x48000000));
     g.fillStyle = grad; g.fillRect(LEFT, TOP, RIGHT - LEFT, HEIGHT - TOP);
@@ -2837,7 +2855,7 @@ function drawSettingRow(row) {
     MUSIC: [null, app.musicVolume > 0], MUSIC_VOLUME: [`${app.musicVolume} %`, null],
     CONTROLS: [t.controlMode[app.controlMode], null], TOUCH_SENSITIVITY: [sensitivityLabel(app.touchSensitivity), null],
     GAMEPAD_SENSITIVITY: [sensitivityLabel(app.gamepadSensitivity), null], HAPTICS: [null, app.hapticsEnabled],
-    LANGUAGE: [t.languageName, null], VISUAL_EFFECTS: [null, app.visualEffects], HIGH_CONTRAST: [null, app.highContrast],
+    LANGUAGE: [t.languageName, null], BACKDROP: [t.backdropStyle[app.backdropStyle], null], VISUAL_EFFECTS: [null, app.visualEffects], HIGH_CONTRAST: [null, app.highContrast],
     REDUCED_MOTION: [null, app.reducedMotion]
   };
   const [value, on] = values[row.id] || ['', null];
@@ -3069,6 +3087,7 @@ function handleSettingsTouch(x, y) {
     case 'HAPTICS': app.hapticsEnabled = !app.hapticsEnabled; prefs.set('haptics_enabled', app.hapticsEnabled); vibrate(10); break;
     case 'LANGUAGE': app.language = app.language === 'fr' ? 'en' : 'fr'; prefs.set('language', app.language); document.documentElement.lang = app.language; break;
     case 'VISUAL_EFFECTS': app.visualEffects = !app.visualEffects; app.shake = 0; app.flash = 0; prefs.set('visual_effects', app.visualEffects); break;
+    case 'BACKDROP': app.backdropStyle = (app.backdropStyle + 1) % 3; prefs.set('backdrop_style', app.backdropStyle); backgroundCache = null; break;
     case 'HIGH_CONTRAST': app.highContrast = !app.highContrast; prefs.set('high_contrast', app.highContrast); break;
     case 'REDUCED_MOTION': app.reducedMotion = !app.reducedMotion; app.shake = 0; app.flash = 0; app.bonusAnimation = 0; prefs.set('reduced_motion', app.reducedMotion); break;
     case 'EXPORT': exportBackup(); break;
