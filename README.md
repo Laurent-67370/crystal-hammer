@@ -15,6 +15,7 @@ Tout tient dans `index.html` (JavaScript et Canvas, sans dépendance ni connexio
 - **Installable comme une application** (icône sur l'écran d'accueil, plein écran, jouable hors connexion) : sur Android, menu de Chrome → « Installer l'application » ; sur iPhone, Safari → Partager → « Sur l'écran d'accueil » ; sur ordinateur, icône d'installation dans la barre d'adresse. Le jeu se met à jour tout seul à la visite suivante.
 - Série du Défi du jour 🔥 : jours consécutifs avec un défi joué jusqu'au bout, affichée sur l'accueil, en fin de défi et dans le score partagé.
 - Partage du score en fin de partie (panneau de partage du système, sinon copie du message), avec un lien qui ouvre le jeu sur le même mode : `?mode=classique`, `chrono`, `survie` ou `defi`.
+- **Décor au choix** (Réglages → Affichage) : motifs, atténué (par défaut, plus reposant pour les yeux) ou uni.
 - Scores, progression et réglages sont enregistrés dans le navigateur ; aucune donnée n'est envoyée.
 
-Version Android : https://github.com/Laurent-67370/prism-smash
+Version Android, avec les classements mondiaux Google Play Jeux : https://github.com/Laurent-67370/prism-smash (bouton « Classements mondiaux · Android » sur l'accueil du jeu web).
